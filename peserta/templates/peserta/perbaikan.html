@@ -1,0 +1,91 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
+  <h2 class="card-title primary mb-4">
+    <i class="fas fa-edit" style="margin-right: 8px;"></i> Perbaiki: {{ field_label }}
+  </h2>
+
+  <div class="form-group">
+    <label class="form-label text-muted">Nilai Saat Ini (Tidak dapat diubah)</label>
+    <input type="text" class="form-input" value="{{ nilai_lama }}" readonly>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label">Nilai Baru{% if not field_required %} <span class="text-muted">(isi nilai atau nyatakan tidak memiliki)</span>{% endif %}</label>
+      {{ form.nilai_baru }}
+      {% if form.nilai_baru.errors %}
+        <div class="form-error">{{ form.nilai_baru.errors.0 }}</div>
+      {% endif %}
+      {% if form.is_bank_field %}
+        <div id="bank-lainnya-group" class="form-group" style="margin-top: 12px; display: none;">
+          <label class="form-label" for="id_bank_lainnya">Nama Bank</label>
+          {{ form.bank_lainnya }}
+          {% if form.bank_lainnya.errors %}
+            <div class="form-error">{{ form.bank_lainnya.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <small class="text-muted">Pilih bank dari daftar. Jika bank Anda tidak tersedia, pilih opsi paling bawah lalu tulis namanya.</small>
+      {% endif %}
+      {% if not field_required and not form.is_bank_field %}
+        <div style="margin-top: 12px;">
+          <label for="id_tidak_dimiliki" style="display:flex; gap:8px; align-items:flex-start; cursor:pointer;">
+            {{ form.tidak_dimiliki }}
+            <span>Saya memang tidak memiliki data ini. Centang hanya jika data tersebut benar-benar tidak dimiliki.</span>
+          </label>
+          {% if form.tidak_dimiliki.errors %}<div class="form-error">{{ form.tidak_dimiliki.errors.0 }}</div>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Alasan Perubahan (opsional)</label>
+      {{ form.alasan }}
+    </div>
+    
+    <div class="alert alert-info" style="display: flex; gap: 10px; align-items: flex-start;">
+      <i class="fas fa-info-circle" style="font-size: 18px; margin-top: 2px;"></i>
+      <span>Perubahan akan ditinjau oleh admin sebelum diterapkan ke sistem.</span>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
+      <button type="submit" class="btn btn-primary btn-block">
+        <i class="fas fa-paper-plane"></i> Ajukan Perbaikan
+      </button>
+      <a href="{% url 'peserta:dashboard' %}" class="btn btn-secondary btn-block">
+        <i class="fas fa-times"></i> Batal
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- SCRIPT UNTUK KEYBOARD ANGKA OTOMATIS -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Daftar field yang harus memunculkan keyboard angka di HP
+    const numericFields = ['nik', 'nip', 'nuptk', 'nomor_rekening'];
+    const fieldName = "{{ field_name }}"; // Diambil dari Django
+    
+    if (numericFields.includes(fieldName)) {
+      const inputBaru = document.getElementById('id_nilai_baru');
+      if (inputBaru) {
+        inputBaru.setAttribute('inputmode', 'numeric');
+        inputBaru.setAttribute('pattern', '[0-9]*');
+      }
+    }
+
+    const bankSelect = document.getElementById('id_nilai_baru');
+    const bankOtherGroup = document.getElementById('bank-lainnya-group');
+    if (bankSelect && bankOtherGroup) {
+      const updateOtherBankVisibility = function() {
+        const showOther = bankSelect.value === '__lainnya__';
+        bankOtherGroup.style.display = showOther ? 'block' : 'none';
+      };
+      bankSelect.addEventListener('change', updateOtherBankVisibility);
+      updateOtherBankVisibility();
+    }
+  });
+</script>
+{% endblock %}

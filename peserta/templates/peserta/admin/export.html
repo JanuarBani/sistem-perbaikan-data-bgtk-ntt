@@ -1,0 +1,136 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Export Excel{% endblock %}
+
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Export Data Peserta</h1>
+    <p class="admin-page-subtitle">
+      Download data peserta ke Excel (.xlsx) dengan filter atau full export
+    </p>
+  </div>
+</div>
+
+<!-- PREVIEW STATISTIK -->
+<div class="stat-grid">
+  <div class="stat-box">
+    <div class="stat-box-value">{{ total_all }}</div>
+    <div class="stat-box-label">Total Peserta</div>
+  </div>
+  <div class="stat-box green">
+    <div class="stat-box-value">{{ total_verified }}</div>
+    <div class="stat-box-label">Sudah Verified</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-box-value">{{ total_with_rek }}</div>
+    <div class="stat-box-label">Punya Rekening</div>
+  </div>
+  <div class="stat-box amber">
+    <div class="stat-box-value">{{ total_belum_identitas }}</div>
+    <div class="stat-box-label">Belum Identitas</div>
+  </div>
+</div>
+
+<!-- FORM FILTER -->
+<div class="admin-card">
+  <h2 class="admin-card-title">
+    <span><i class="fas fa-filter" style="color: #2563eb;"></i> Filter Data</span>
+  </h2>
+
+  <form method="get" action="{% url 'admin_panel:export_excel_download' %}" id="export-form">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Pencarian</label>
+        <input type="text" name="q" class="form-input"
+               placeholder="Nama / NIK / NIP / NUPTK…">
+        <span class="form-help">Kosongkan untuk semua data</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status Akun</label>
+        <select name="status" class="form-select">
+          <option value="">— Semua Status —</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kabupaten</label>
+        <select name="kabupaten" class="form-select">
+          <option value="">— Semua Kabupaten —</option>
+          {% for kab in kabupaten_list %}
+            <option value="{{ kab }}">{{ kab }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Jenjang</label>
+        <select name="jenjang" class="form-select">
+          <option value="">— Semua Jenjang —</option>
+          {% for j in jenjang_list %}
+            <option value="{{ j }}">{{ j }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status Rekening</label>
+        <select name="has_rekening" class="form-select">
+          <option value="">— Semua —</option>
+          <option value="yes">Sudah punya rekening</option>
+          <option value="no">Belum punya rekening</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status Verifikasi Data</label>
+        <select name="verified" class="form-select">
+          <option value="">— Semua —</option>
+          <option value="yes">Sudah diverifikasi</option>
+          <option value="no">Belum diverifikasi</option>
+        </select>
+      </div>
+    </div>
+
+    <input type="hidden" name="scope" value="filter" id="scope-input">
+
+    <div class="form-info-box info">
+      <strong>Info:</strong> Tombol <b>Export Terfilter</b> akan mengunduh data sesuai filter di atas.
+      Tombol <b>Export Full</b> akan mengunduh <b>SEMUA data</b> ({{ total_all }} baris) — filter diabaikan.
+    </div>
+
+    <div class="action-buttons">
+      <button type="submit" class="btn btn-primary"
+              onclick="document.getElementById('scope-input').value='filter'">
+        <i class="fas fa-file-excel"></i> Export Terfilter
+      </button>
+      <button type="submit" class="btn btn-success"
+              onclick="document.getElementById('scope-input').value='full'">
+        <i class="fas fa-database"></i> Export Full ({{ total_all }})
+      </button>
+      <button type="reset" class="btn btn-secondary">
+        <i class="fas fa-undo"></i> Reset Filter
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- PETUNJUK -->
+<div class="admin-card">
+  <h2 class="admin-card-title">
+    <span><i class="fas fa-info-circle" style="color: #2563eb;"></i> Petunjuk</span>
+  </h2>
+  <ul style="line-height: 2; padding-left: 20px; margin: 0;">
+    <li>Pilih filter di atas lalu klik <b>Export Terfilter</b> untuk mengunduh data sesuai filter.</li>
+    <li>Klik <b>Export Full</b> untuk mengunduh semua {{ total_all }} baris tanpa filter apa pun.</li>
+    <li>File berformat <code>.xlsx</code>, kolom identitas (NUPTK/NIP/NIK/Rekening) diformat sebagai <b>Teks</b> agar tidak berubah jadi scientific notation.</li>
+    <li>File akan bernama <code>data-peserta-{scope}-{tanggal}.xlsx</code> sesuai filter yang dipakai.</li>
+    <li>Header file berisi informasi: tanggal export, scope, filter yang dipakai, dan total baris.</li>
+  </ul>
+</div>
+
+{% endblock %}

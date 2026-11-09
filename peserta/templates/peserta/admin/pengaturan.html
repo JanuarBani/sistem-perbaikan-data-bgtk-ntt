@@ -1,0 +1,62 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Pengaturan{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Pengaturan Sistem</h1>
+    <div class="admin-page-subtitle">Konfigurasi batas & retensi data</div>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="admin-card">
+    <div class="admin-card-title"><i class="fas fa-sliders-h" style="margin-right: 6px; color: #2563eb;"></i> Batas Aktivasi</div>
+    <div class="detail-grid">
+      <div class="form-group">
+        <label>Batas Pending Aktivasi</label>
+        <input type="number" name="batas_pending_aktivasi" value="{{ setting.batas_pending_aktivasi }}" class="form-input" min="1">
+        <small class="form-help">Form aktivasi tutup jika pending ≥ nilai ini. Rekomendasi: 50</small>
+      </div>
+      <div class="form-group">
+        <label>Batas Draft Aktif</label>
+        <input type="number" name="batas_draft_aktivasi" value="{{ setting.batas_draft_aktivasi }}" class="form-input" min="1">
+        <small class="form-help">Jumlah draft maksimal yang bisa aktif bersamaan.</small>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Durasi Draft (menit)</label>
+      <input type="number" name="durasi_draft_menit" value="{{ setting.durasi_draft_menit }}" class="form-input" min="5">
+      <small class="form-help">Draft otomatis dihapus setelah durasi ini jika tidak submit.</small>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-title"><i class="fas fa-database" style="margin-right: 6px; color: #2563eb;"></i> Retensi Data</div>
+    <div class="detail-grid">
+      <div class="form-group">
+        <label>Auto-Reject Pending (hari)</label>
+        <input type="number" name="auto_reject_pending_hari" value="{{ setting.auto_reject_pending_hari }}" class="form-input" min="1">
+        <small class="form-help">Pengajuan yang pending lebih dari N hari otomatis di-reject + file dihapus.</small>
+      </div>
+      <div class="form-group">
+        <label>Ukuran File Maksimal (MB)</label>
+        <input type="number" name="ukuran_file_maksimal_mb" value="{{ setting.ukuran_file_maksimal_mb }}" class="form-input" min="1" max="10">
+        <small class="form-help">Upload dokumen dibatasi ukuran ini. Rekomendasi: 2 MB.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Simpan Pengaturan</button>
+  </div>
+</form>
+
+<div class="admin-card" style="margin-top: 20px; background: #fef3c7; border-left: 4px solid #f59e0b;">
+  <div style="font-size: 13px; color: #92400e;">
+    <i class="fas fa-info-circle" style="margin-right: 6px;"></i> <strong>Catatan:</strong> Pengaturan ini langsung berlaku untuk semua pengguna. Perubahan drastis (misal batas pending dari 50 ke 200) akan berdampak pada penggunaan kuota disk PythonAnywhere.
+  </div>
+</div>
+
+{% endblock %}

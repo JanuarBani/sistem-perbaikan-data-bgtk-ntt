@@ -1,0 +1,37 @@
+# Framework
+Django==6.1.3
+
+# Django dependencies
+asgiref==3.13.0
+sqlparse==0.6.1
+tzdata==2026.6
+
+# Environment configuration
+python-dotenv>=1.0
+
+# Excel processing
+openpyxl>=3.1
+
+# Image processing
+Pillow>=10.0
+
+# File type detection
+python-magic-bin>=0.4.14; platform_system == "Windows"
+python-magic>=0.4.27; platform_system != "Windows"
+
+# Encrypted database fields
+django-fernet-encrypted-fields>=0.1.3
+
+# Rate limiting
+django-ratelimit>=4.1
+
+# Template utilities
+django-widget-tweaks>=1.5
+
+# Cryptography
+cryptography>=42.0
+
+# PostgreSQL production driver
+psycopg[binary]>=3.1
+
+

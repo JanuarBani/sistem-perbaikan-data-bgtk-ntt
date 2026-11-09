@@ -1,0 +1,113 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+
+<!-- BREADCRUMB & TOMBOL KEMBALI -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+  <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+    <i class="fas fa-home"></i> Beranda 
+    <i class="fas fa-chevron-right" style="font-size: 10px; margin: 0 6px;"></i> 
+    Pencarian Data
+  </div>
+  <a href="{% url 'peserta:landing' %}" class="btn btn-secondary btn-sm" style="background: white; border: 1px solid var(--border); color: var(--text-main);">
+    <i class="fas fa-arrow-left"></i> Kembali
+  </a>
+</div>
+
+<div class="card">
+  <h2 class="card-title primary mb-4">🔍 Cari Data Anda</h2>
+
+  <!-- Form Pencarian: Bisa Submit lewat tombol Cari ATAU tombol Enter -->
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label">Nama / Instansi / Kabupaten / NIP / NIK</label>
+      {{ form.kata_kunci }}
+      <small class="text-muted">
+        💡 Bisa ketik salah satu atau gabungan:
+        <strong>nama</strong> ("Siti"),
+        <strong>instansi</strong> ("SDN 01"),
+        <strong>kabupaten</strong> ("Tanah Laut"),
+        <strong>NIP</strong>, atau <strong>NIK</strong>.
+        Huruf besar-kecil tidak berpengaruh.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Filter Kabupaten (opsional)</label>
+      {{ form.kabupaten }}
+      <small class="text-muted">
+        Gunakan jika hasil terlalu banyak. Contoh: "Banjarmasin", "Kotabaru".
+      </small>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">
+      <i class="fas fa-search"></i> Cari Data
+    </button>
+  </form>
+</div>
+
+{% if kata_kunci or kabupaten_filter %}
+  <div class="card">
+    <h3 class="card-title mb-4">
+      Hasil Pencarian
+      {% if kata_kunci %}untuk "{{ kata_kunci }}"{% endif %}
+      {% if kabupaten_filter %}di {{ kabupaten_filter }}{% endif %}
+    </h3>
+
+    {% if hasil %}
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+        Ditemukan <strong>{{ total_hasil }}</strong> peserta
+        {% if total_hasil > hasil|length %}, menampilkan <strong>{{ hasil|length }}</strong> pertama{% endif %}.
+        Pilih yang sesuai dengan identitas Anda.
+      </p>
+
+      {% for p in hasil %}
+        {% if p.has_identity %}
+          <a href="{% url 'peserta:verifikasi' p.id %}" class="result-item">
+            <div class="result-name">{{ p.nama }}</div>
+            <div class="result-meta">
+              <span style="display: inline-block;">📍 {{ p.kabupaten|default:"-" }}</span>
+            </div>
+          </a>
+        {% else %}
+          <a href="{% url 'peserta:aktivasi' p.id %}" class="result-item"
+            style="border-left: 4px solid #f59e0b; background: #fffbeb;">
+            <div class="result-name">
+              {{ p.nama }}
+              <span style="display: inline-block; margin-left: 8px; background: #fef3c7; color: #92400e; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700;">
+                ⚠️ Belum Ada Identitas
+              </span>
+            </div>
+            <div class="result-meta">
+              <span style="display: inline-block;">📍 {{ p.kabupaten|default:"-" }}</span>
+            </div>
+            <div style="font-size: 12px; color: #92400e; margin-top: 6px; font-weight: 600;">
+              → Klik untuk mengajukan aktivasi dengan upload dokumen
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {% if total_hasil > hasil|length %}
+        <div class="alert alert-info mt-4">
+          ℹ️ Menampilkan {{ hasil|length }} dari {{ total_hasil }} hasil.
+          Persempit pencarian dengan <strong>Filter Kabupaten</strong> di atas,
+          atau tambahkan kata kunci lain (misal: "Siti SDN").
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="alert alert-warning">
+        ❌ Tidak ditemukan peserta dengan kriteria tersebut.
+        <ul style="margin-top: 8px; margin-left: 20px;">
+          <li>Coba kata kunci lebih singkat (misal "Siti" saja).</li>
+          <li>Periksa ejaan nama, instansi, atau kabupaten.</li>
+          <li>Jika data identitas Anda kosong, gunakan menu <strong>Aktivasi</strong>.</li>
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

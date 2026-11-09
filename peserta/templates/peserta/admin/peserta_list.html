@@ -1,0 +1,174 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Daftar Peserta{% endblock %}
+{% block content %}
+
+<div class="admin-topbar" style="flex-wrap: wrap; gap: 16px; align-items: center;">
+  <div>
+    <h1 class="admin-page-title">Daftar Peserta</h1>
+    <div class="admin-page-subtitle">{{ total }} peserta ditemukan</div>
+  </div>
+  <a href="{% url 'admin_panel:export_excel' %}" class="btn btn-primary" style="white-space: nowrap;">
+    <i class="fas fa-file-excel"></i> Export Excel
+  </a>
+</div>
+
+<form method="get" class="filter-bar" style="flex-wrap: wrap; gap: 10px;">
+  <input type="text" name="q" value="{{ q }}" placeholder="Cari nama/NIP/NIK/NUPTK..." style="flex: 1; min-width: 200px;">
+  
+  <select name="status" onchange="this.form.submit()">
+    <option value="">Semua Status</option>
+    {% for val, label in status_choices %}
+      <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  
+  <select name="kabupaten" onchange="this.form.submit()">
+    <option value="">Semua Kabupaten</option>
+    {% for k in kabupaten_list %}
+      <option value="{{ k }}" {% if kab_filter == k %}selected{% endif %}>{{ k }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- FILTER MASALAH DATA -->
+  <select name="duplikat" onchange="this.form.submit()" style="background-color: {% if dup_filter %}#fef2f2{% else %}#fff{% endif %}; border-color: {% if dup_filter %}#ef4444{% else %}var(--border){% endif %}; font-weight: {% if dup_filter %}bold{% else %}normal{% endif %}; color: {% if dup_filter %}#991b1b{% else %}var(--text-main){% endif %};">
+    <option value="">Filter Masalah Data</option>
+    
+    <optgroup label="Data Ganda">
+      <option value="nik" {% if dup_filter == 'nik' %}selected{% endif %}>⚠️ NIK Ganda</option>
+      <option value="nip" {% if dup_filter == 'nip' %}selected{% endif %}>⚠️ NIP Ganda</option>
+      <option value="nuptk" {% if dup_filter == 'nuptk' %}selected{% endif %}>⚠️ NUPTK Ganda</option>
+      <option value="nama" {% if dup_filter == 'nama' %}selected{% endif %}>⚠️ Nama Ganda</option>
+    </optgroup>
+    
+    <optgroup label="Panjang Digit Salah">
+      <option value="nik_salah" {% if dup_filter == 'nik_salah' %}selected{% endif %}>❌ NIK (Bukan 16 digit)</option>
+      <option value="nip_salah" {% if dup_filter == 'nip_salah' %}selected{% endif %}>❌ NIP (Bukan 18 digit)</option>
+      <option value="nuptk_salah" {% if dup_filter == 'nuptk_salah' %}selected{% endif %}>❌ NUPTK (Bukan 16 digit)</option>
+    </optgroup>
+  </select>
+  
+  <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+    <i class="fas fa-search"></i> Cari
+  </button>
+  
+  {% if dup_filter or q or status_filter or kab_filter %}
+    <a href="{% url 'admin_panel:peserta_list' %}" class="btn btn-secondary" style="padding: 10px 16px;" title="Reset Filter">
+      <i class="fas fa-times"></i>
+    </a>
+  {% endif %}
+</form>
+
+{% if dup_filter %}
+<div class="alert alert-warning" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+  <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
+  <div>
+    Menampilkan daftar peserta dengan kriteria: <strong>
+      {% if dup_filter == 'nik' %}NIK Ganda
+      {% elif dup_filter == 'nip' %}NIP Ganda
+      {% elif dup_filter == 'nuptk' %}NUPTK Ganda
+      {% elif dup_filter == 'nama' %}Nama Ganda
+      {% elif dup_filter == 'nik_salah' %}NIK Tidak Valid (Bukan 16 Digit)
+      {% elif dup_filter == 'nip_salah' %}NIP Tidak Valid (Bukan 18 Digit)
+      {% elif dup_filter == 'nuptk_salah' %}NUPTK Tidak Valid (Bukan 16 Digit)
+      {% endif %}
+    </strong>. Segera periksa dan perbaiki data mereka.
+  </div>
+</div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th class="hide-on-mobile">No</th>
+        <th>Nama Peserta</th>
+        <th>NIP / NIK</th>
+        <th>NUPTK</th>
+        <th>Kabupaten</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in page %}
+      <tr>
+        <td class="hide-on-mobile">{{ page.start_index|add:forloop.counter0 }}</td>
+        <td>
+          <span class="nama-peserta" {% if dup_filter == 'nama' %}style="color: #ef4444 !important;"{% endif %}>
+            {{ p.nama }}
+          </span>
+          <span class="instansi-peserta">{{ p.tempat_tugas|default:"-" }}</span>
+        </td>
+        <td style="font-size: 12px; white-space: nowrap;">
+          {% if p.nip %}
+            <div style="background: {% if dup_filter == 'nip' or dup_filter == 'nip_salah' %}#fee2e2{% else %}#f1f5f9{% endif %}; color: {% if dup_filter == 'nip' or dup_filter == 'nip_salah' %}#991b1b{% else %}inherit{% endif %}; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; display: inline-block;">
+              NIP: {{ p.nip }}
+            </div><br>
+          {% endif %}
+          {% if p.nik %}
+            <div style="background: {% if dup_filter == 'nik' or dup_filter == 'nik_salah' %}#fee2e2{% else %}#f1f5f9{% endif %}; color: {% if dup_filter == 'nik' or dup_filter == 'nik_salah' %}#991b1b{% else %}inherit{% endif %}; padding: 4px 8px; border-radius: 4px; display: inline-block;">
+              NIK: {{ p.nik }}
+            </div>
+          {% endif %}
+          {% if not p.nip and not p.nik %}-{% endif %}
+        </td>
+        <td style="font-size: 13px; {% if dup_filter == 'nuptk' or dup_filter == 'nuptk_salah' %}background: #fee2e2; color: #991b1b; font-weight: bold; padding: 4px 8px; border-radius: 4px;{% endif %}">
+          {{ p.nuptk|default:"-" }}
+        </td>
+        <td>{{ p.kabupaten|default:"-" }}</td>
+        <td>
+          <span class="badge badge-{% if p.status_akun == 'aktif' %}approved{% elif p.status_akun == 'pending_aktivasi' %}pending{% else %}draft{% endif %}" style="white-space: nowrap;">
+            {{ p.get_status_akun_display }}
+          </span>
+        </td>
+        <td style="white-space: nowrap;">
+          <a href="{% url 'admin_panel:peserta_detail' p.id %}" class="btn btn-primary btn-sm" style="margin-bottom: 4px;">Detail</a>
+          <a href="{% url 'admin_panel:peserta_edit' p.id %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary btn-sm" style="margin-bottom: 4px;">Edit</a>
+          
+          {% if p.nomor_wa %}
+            <div style="display: inline-block;">
+              <select onchange="updateWA(this, '{{ p.nomor_wa }}', '{{ p.nama|escapejs }}')" class="form-select" style="width: auto; padding: 4px 24px 4px 8px; font-size: 11px; height: 28px; background-color: #25D366; color: white; border: none; font-weight: bold;">
+                <option value="">📱 Chat WA</option>
+                <option value="1">Data belum lengkap</option>
+                <option value="2">Perbaikan disetujui</option>
+                <option value="3">Dokumen KTP kurang jelas</option>
+              </select>
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+        {% if dup_filter %}
+          Tidak ditemukan data bermasalah untuk kriteria tersebut. Data sudah bersih! 🎉
+        {% else %}
+          Tidak ada peserta yang sesuai dengan pencarian.
+        {% endif %}
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+<script>
+  function updateWA(select, nomor, nama) {
+    if (!select.value) return;
+    
+    let text = "";
+    if (select.value === "1") {
+      text = `Halo Bapak/Ibu *${nama}*, kami melihat data kepegawaian Anda belum lengkap. Mohon segera lengkapi data (NIK/NIP/NUPTK) Anda melalui website Perbaikan Data Guru Terdampak Gempa Flores. Terima kasih.`;
+    } else if (select.value === "2") {
+      text = `Halo Bapak/Ibu *${nama}*, pengajuan perbaikan data Anda telah *DISETUJUI*. Silakan cek website untuk melihat pembaruan. Terima kasih.`;
+    } else if (select.value === "3") {
+      text = `Halo Bapak/Ibu *${nama}*, dokumen KTP/SK yang Anda unggah kurang jelas. Mohon login kembali ke website dan unggah ulang dokumen yang lebih terang. Terima kasih.`;
+    }
+    
+    const url = `https://wa.me/${nomor}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    select.value = ""; // Reset
+  }
+</script>
+
+{% endblock %}

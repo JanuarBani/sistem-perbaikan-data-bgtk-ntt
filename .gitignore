@@ -1,0 +1,35 @@
+# Virtual environment
+env/
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+*.log
+*.sqlite3
+
+# Media
+media/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+# Private participant identity documents
+private_media/
+
+# Generated or sensitive local data
+backups/
+data.xlsx
+~$*.xlsx
+staticfiles/
+tmp_cache/

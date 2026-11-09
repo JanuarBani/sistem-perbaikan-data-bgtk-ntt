@@ -1,0 +1,19 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card">
+  <h2 class="card-title primary mb-4">Status Pengajuan Aktivasi</h2>
+  <div class="data-list">
+    <div class="data-row"><div class="data-label">No. Referensi</div><div class="data-value">{{ pengajuan.nomor_referensi }}</div></div>
+    <div class="data-row"><div class="data-label">Nama</div><div class="data-value">{{ pengajuan.peserta.nama }}</div></div>
+    <div class="data-row"><div class="data-label">Tanggal Ajuan</div><div class="data-value">{{ pengajuan.created_at|date:"d M Y H:i" }}</div></div>
+    <div class="data-row"><div class="data-label">Status</div><div class="data-value"><span class="badge badge-{{ pengajuan.status }}">{{ pengajuan.get_status_display }}</span></div></div>
+  </div>
+  {% if pengajuan.status == 'pending' %}
+    <div class="alert alert-warning mt-4">⏳ Pengajuan sedang menunggu verifikasi admin (1–3 hari kerja).</div>
+  {% elif pengajuan.status == 'approved' %}
+    <div class="alert alert-success mt-4">✅ Pengajuan disetujui! Silakan <a href="{% url 'peserta:cari' %}">login</a> dengan NIK/NIP/NUPTK yang baru.</div>
+  {% elif pengajuan.status == 'rejected' %}
+    <div class="alert alert-error mt-4">❌ Pengajuan ditolak: {{ pengajuan.catatan_admin }}<br>Silakan ajukan ulang.</div>
+  {% endif %}
+</div>
+{% endblock %}

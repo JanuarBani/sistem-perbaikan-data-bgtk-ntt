@@ -1,0 +1,96 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Daftar Aktivasi{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Aktivasi Akun</h1>
+    <div class="admin-page-subtitle">Review pengajuan aktivasi dari peserta tanpa identitas</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">
+      Pending ({{ counts.pending }})
+    </a>
+    <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">
+      Disetujui ({{ counts.approved }})
+    </a>
+    <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">
+      Ditolak ({{ counts.rejected }})
+    </a>
+    <a href="?status=all" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">
+      Semua ({{ counts.total }})
+    </a>
+  </div>
+
+  <form method="get" style="display: flex; gap: 8px; margin-left: auto;">
+    <input type="hidden" name="status" value="{{ status_filter }}">
+    <input type="text" name="q" value="{{ q }}" placeholder="Cari ref/nama/NIK...">
+    <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+  </form>
+</div>
+
+<div class="admin-card" style="padding: 0; overflow: hidden;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Ref</th>
+        <th>Peserta</th>
+        <th>NIK / NIP / NUPTK</th>
+        <th>Dokumen</th>
+        <th>Status</th>
+        <th>Waktu</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in aktivasi_list %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><strong>{{ p.nomor_referensi }}</strong></td>
+        <td>
+          <strong>{{ p.peserta.nama|truncatechars:20 }}</strong><br>
+          <small style="color: #64748b;">{{ p.peserta.kabupaten }}</small>
+        </td>
+        <td style="font-size: 12px;">
+          {% if p.nik_diisi %}NIK: {{ p.nik_diisi }}<br>{% endif %}
+          {% if p.nip_diisi %}NIP: {{ p.nip_diisi }}<br>{% endif %}
+          {% if p.nuptk_diisi %}NUPTK: {{ p.nuptk_diisi }}{% endif %}
+          {% if not p.nik_diisi and not p.nip_diisi and not p.nuptk_diisi %}-{% endif %}
+        </td>
+        <td>
+          <span style="font-size: 12px;">{{ p.dokumen.count }} file</span>
+        </td>
+        <td><span class="badge badge-{{ p.status }}">{{ p.get_status_display }}</span></td>
+        <td style="font-size: 11px; color: #64748b;">{{ p.created_at|date:"d M H:i" }}</td>
+        <td style="white-space: nowrap;">
+          <a href="{% url 'admin_panel:aktivasi_detail' p.id %}" class="btn btn-primary btn-sm">
+            {% if p.status == 'pending' %}Review{% else %}Lihat{% endif %}
+          </a>
+
+          <!-- TOMBOL WHATSAPP -->
+          {% if p.peserta.nomor_wa %}
+            <a href="https://wa.me/{{ p.peserta.nomor_wa }}?text=Halo%20Bapak/Ibu%20{{ p.peserta.nama|urlencode }}%2C%20terkait%20pengajuan%20aktivasi%20akun%20Anda%20dengan%20No.%20Ref%20{{ p.nomor_referensi }}..." 
+               target="_blank" class="btn btn-sm" style="background-color: #25D366; color: white; border: none; margin-left: 4px;" title="Hubungi via WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+          Tidak ada aktivasi dengan filter tersebut.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Detail Perbaikan{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Review Perbaikan</h1>
+    <div class="admin-page-subtitle">
+      <a href="{% url 'admin_panel:perbaikan_list' %}" style="color: #2563eb;">← Kembali ke daftar</a>
+    </div>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- DATA PESERTA -->
+  <div class="admin-card">
+    <div class="admin-card-title">Data Peserta</div>
+    <div class="detail-row">
+      <div class="detail-label">Nama</div>
+      <div class="detail-value"><strong>{{ perbaikan.peserta.nama }}</strong></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">NIP</div>
+      <div class="detail-value">{{ perbaikan.peserta.nip|default:"-" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">NIK</div>
+      <div class="detail-value">{{ perbaikan.peserta.nik|default:"-" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Kabupaten</div>
+      <div class="detail-value">{{ perbaikan.peserta.kabupaten|default:"-" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">No. WA</div>
+      <div class="detail-value">
+        {{ perbaikan.peserta.nomor_wa|default:"-" }}
+        <!-- TOMBOL WHATSAPP -->
+        {% if perbaikan.peserta.nomor_wa %}
+          <a href="https://wa.me/{{ perbaikan.peserta.nomor_wa }}?text=Halo%20Bapak/Ibu%20{{ perbaikan.peserta.nama|urlencode }}%2C%20terkait%20perbaikan%20data%20{{ perbaikan.get_field_name_display }}%20Anda..." 
+             target="_blank" class="btn btn-sm" style="background-color: #25D366; color: white; border: none; margin-left: 8px; padding: 4px 10px; font-size: 12px;">
+            <i class="fab fa-whatsapp"></i> Chat
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO PENGAJUAN -->
+  <div class="admin-card">
+    <div class="admin-card-title">Info Pengajuan</div>
+    <div class="detail-row">
+      <div class="detail-label">Field</div>
+      <div class="detail-value"><strong>{{ perbaikan.get_field_name_display }}</strong></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Status</div>
+      <div class="detail-value"><span class="badge badge-{{ perbaikan.status }}">{{ perbaikan.get_status_display }}</span></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Diajukan</div>
+      <div class="detail-value">{{ perbaikan.created_at|date:"d M Y H:i" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">IP Address</div>
+      <div class="detail-value" style="font-family: monospace;">{{ perbaikan.ip_address|default:"-" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">User Agent</div>
+      <div class="detail-value" style="font-size: 11px; color: #64748b;">{{ perbaikan.user_agent|truncatechars:80|default:"-" }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- PERBANDINGAN -->
+<div class="admin-card">
+  <div class="admin-card-title">Perbandingan Nilai</div>
+  <div class="detail-grid">
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px;">NILAI LAMA</div>
+      <div class="detail-nilai-lama">
+        {{ perbaikan.nilai_lama|default:"(kosong)" }}
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px;">{% if perbaikan.tidak_dimiliki %}PERNYATAAN PESERTA{% else %}NILAI BARU (USULAN){% endif %}</div>
+      <div class="detail-nilai-baru">
+        {% if perbaikan.tidak_dimiliki %}
+          <strong>Peserta menyatakan tidak memiliki data {{ perbaikan.get_field_name_display }}.</strong>
+          <div style="margin-top: 8px; font-size: 13px; color: #64748b;">Jika disetujui, kolom {{ perbaikan.get_field_name_display }} peserta akan tetap kosong dan ditandai sebagai telah dinyatakan tidak dimiliki.</div>
+        {% else %}
+          <strong>{{ perbaikan.nilai_baru }}</strong>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if perbaikan.alasan %}
+  <div style="margin-top: 16px; padding: 12px 16px; background: #f8fafc; border-radius: 8px;">
+    <strong style="font-size: 12px; color: #64748b;">ALASAN PERUBAHAN:</strong>
+    <div style="margin-top: 6px; font-size: 14px;">{{ perbaikan.alasan }}</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- FORM AKSI -->
+{% if perbaikan.status == 'pending' %}
+<div class="admin-card">
+  <div class="admin-card-title">Aksi</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">
+        Catatan Admin (opsional untuk approve, wajib untuk reject)
+      </label>
+      <textarea name="catatan_admin" rows="3" placeholder="Alasan approve atau reject..."></textarea>
+    </div>
+
+    <div class="action-buttons">
+      <button type="submit" name="action" value="approve" class="btn btn-success"
+              onclick="return confirm('{% if perbaikan.tidak_dimiliki %}Setujui pernyataan bahwa peserta tidak memiliki data ini?{% else %}Setujui perbaikan ini? Data peserta akan diperbarui.{% endif %}');">
+        ✅ Approve & Apply
+      </button>
+      <button type="submit" name="action" value="reject" class="btn btn-danger"
+              onclick="return confirm('Tolak perbaikan ini?');">
+        ❌ Reject
+      </button>
+      <a href="{% url 'admin_panel:perbaikan_list' %}" class="btn btn-secondary">Batal</a>
+    </div>
+  </form>
+</div>
+{% else %}
+<div class="admin-card">
+  <div class="admin-card-title">Hasil Review</div>
+  <div class="detail-row">
+    <div class="detail-label">Direview oleh</div>
+    <div class="detail-value">{{ perbaikan.reviewed_by.username|default:"-" }}</div>
+  </div>
+  <div class="detail-row">
+    <div class="detail-label">Tanggal review</div>
+    <div class="detail-value">{{ perbaikan.reviewed_at|date:"d M Y H:i"|default:"-" }}</div>
+  </div>
+  {% if perbaikan.catatan_admin %}
+  <div class="detail-row">
+    <div class="detail-label">Catatan</div>
+    <div class="detail-value">{{ perbaikan.catatan_admin }}</div>
+  </div>
+  {% endif %}
+  <div class="action-buttons">
+    <a href="{% url 'admin_panel:perbaikan_list' %}" class="btn btn-secondary">← Kembali</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

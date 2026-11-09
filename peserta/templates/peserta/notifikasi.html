@@ -1,0 +1,62 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title primary"><i class="fas fa-inbox" style="margin-right: 8px;"></i> Notifikasi</h2>
+    {% if notifikasi %}
+      <form method="post" action="{% url 'peserta:notifikasi_hapus_semua' %}"
+            onsubmit="return confirm('Hapus semua notifikasi Anda? Tindakan ini tidak dapat dibatalkan.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="fas fa-trash-alt"></i> Hapus Semua
+        </button>
+      </form>
+    {% endif %}
+  </div>
+  
+  {% for n in notifikasi %}
+    <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--gray-200); {% if not n.sudah_dibaca %}background: #f0f9ff;{% endif %}">
+      <form method="post" action="{% url 'peserta:notifikasi_baca' n.id %}" style="margin:0; flex:1;">
+        {% csrf_token %}
+        <button type="submit"
+         style="width:100%; display: flex; gap: 16px; padding: 16px; border: 0; background: transparent; text-align: left; color: inherit; cursor: pointer; transition: background 0.2s;"
+         onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+      
+      <div style="flex-shrink: 0; padding-top: 2px;">
+        {% if not n.sudah_dibaca %}
+          <i class="fas fa-envelope" style="color: var(--primary); font-size: 20px;"></i>
+        {% else %}
+          <i class="far fa-envelope-open" style="color: var(--gray-500); font-size: 20px;"></i>
+        {% endif %}
+      </div>
+      
+      <div style="flex: 1;">
+        <div style="font-weight: {% if not n.sudah_dibaca %}700{% else %}600{% endif %}; color: {% if not n.sudah_dibaca %}var(--primary-dark){% else %}var(--gray-900){% endif %}; margin-bottom: 4px;">
+          {{ n.judul }}
+          {% if not n.sudah_dibaca %}
+            <span class="badge badge-pending" style="font-size: 9px; margin-left: 8px;">Baru</span>
+          {% endif %}
+        </div>
+        <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">{{ n.isi|truncatewords:20 }}</div>
+        <div style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">
+          <i class="far fa-clock"></i> {{ n.created_at|date:"d M Y H:i" }}
+        </div>
+      </div>
+        </button>
+      </form>
+      <form method="post" action="{% url 'peserta:notifikasi_hapus' n.id %}" style="margin:0; padding: 0 12px;"
+            onsubmit="return confirm('Hapus notifikasi ini? Tindakan ini tidak dapat dibatalkan.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm" aria-label="Hapus notifikasi" title="Hapus notifikasi">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
+    </div>
+  {% empty %}
+    <div class="text-muted text-center p-4" style="padding: 40px 0;">
+      <i class="fas fa-inbox" style="font-size: 48px; color: var(--gray-300); margin-bottom: 16px; display: block;"></i>
+      Belum ada notifikasi.
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

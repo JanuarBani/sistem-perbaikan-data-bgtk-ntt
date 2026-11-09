@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- ✅ FAVICON (Ikon di sebelah kiri judul tab) -->
+  <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/favicon.ico' %}">
+  
+  <title>{% block title %}Admin Panel{% endblock %} — Perbaikan Data Gempa Flores</title>
+
+  <!-- Font Awesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- TOPBAR KHUSUS MOBILE (Hanya muncul di HP) -->
+<div class="mobile-topbar">
+  <button type="button" class="menu-btn" id="mobile-menu-btn" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="brand-text">Admin Panel</div>
+</div>
+
+<!-- OVERLAY GELAP SAAT MENU TERBUKA -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+
+    <!-- LOGO & BRAND (Vertikal) -->
+    <div class="admin-sidebar-brand">
+      <img src="{% static 'images/logo.webp' %}" alt="Logo BGTK NTT"
+     class="brand-logo"
+     style="display: block; width: 100%; max-width: 220px; height: auto; object-fit: contain; background: #ffffff; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); margin: 0 auto;">
+      <div>
+        <span class="brand-title">Admin Panel</span>
+        <small class="brand-subtitle">Perbaikan Data Gempa Flores</small>
+      </div>
+    </div>
+
+    {% with url_name=request.resolver_match.url_name|default:'' %}
+    <nav class="admin-sidebar-nav">
+      <a href="{% url 'admin_panel:dashboard' %}"
+         class="admin-nav-link {% if url_name == 'dashboard' %}active{% endif %}">
+        <span class="icon"><i class="fas fa-home"></i></span> Dashboard
+      </a>
+
+      <div class="admin-nav-section">Review</div>
+
+      <a href="{% url 'admin_panel:perbaikan_list' %}"
+         class="admin-nav-link {% if 'perbaikan' in url_name %}active{% endif %}">
+        <span class="icon"><i class="fas fa-edit"></i></span> Perbaikan
+        {% if pending_perbaikan_count %}<span class="admin-nav-badge">{{ pending_perbaikan_count }}</span>{% endif %}
+      </a>
+
+      <a href="{% url 'admin_panel:aktivasi_list' %}"
+         class="admin-nav-link {% if 'aktivasi' in url_name %}active{% endif %}">
+        <span class="icon"><i class="fas fa-file-signature"></i></span> Aktivasi
+        {% if pending_aktivasi_count %}<span class="admin-nav-badge">{{ pending_aktivasi_count }}</span>{% endif %}
+      </a>
+
+      <div class="admin-nav-section">Data</div>
+
+      <!-- EXACT MATCH — jangan substring, karena url_name = 'peserta_sesuai_list' juga mengandung 'peserta' -->
+      <a href="{% url 'admin_panel:peserta_list' %}"
+         class="admin-nav-link {% if url_name == 'peserta_list' %}active{% endif %}">
+        <span class="icon"><i class="fas fa-users"></i></span> Daftar Peserta
+      </a>
+
+      <a href="{% url 'admin_panel:peserta_sesuai_list' %}"
+         class="admin-nav-link {% if url_name == 'peserta_sesuai_list' %}active{% endif %}">
+        <span class="icon"><i class="fas fa-check-double"></i></span> Data Sesuai
+      </a>
+
+      <a href="{% url 'admin_panel:notifikasi_list' %}"
+         class="admin-nav-link {% if 'notifikasi' in url_name %}active{% endif %}">
+        <span class="icon"><i class="fas fa-bell"></i></span> Notifikasi
+      </a>
+
+      <!-- FIX: active state untuk halaman export (form & download) -->
+      <a href="{% url 'admin_panel:export_excel' %}"
+         class="admin-nav-link {% if 'export' in url_name %}active{% endif %}">
+        <span class="icon"><i class="fas fa-file-export"></i></span> Export Excel
+      </a>
+
+      <div class="admin-nav-section">Sistem</div>
+
+      <a href="{% url 'admin_panel:log_list' %}"
+         class="admin-nav-link {% if url_name == 'log_list' %}active{% endif %}">
+        <span class="icon"><i class="fas fa-history"></i></span> Log Aktivitas
+      </a>
+
+      <a href="{% url 'admin_panel:pengaturan' %}"
+         class="admin-nav-link {% if url_name == 'pengaturan' %}active{% endif %}">
+        <span class="icon"><i class="fas fa-cog"></i></span> Pengaturan
+      </a>
+
+      <div class="admin-nav-section">Django Admin</div>
+
+      <a href="/admin/" target="_blank" rel="noopener" class="admin-nav-link">
+        <span class="icon"><i class="fas fa-tools"></i></span> Django Admin
+      </a>
+    </nav>
+    {% endwith %}
+
+    <div class="admin-sidebar-footer">
+      <div class="footer-user">
+        <i class="fas fa-user-circle"></i>
+        Login sebagai
+        <strong>
+          {% if request.user.nama_lengkap %}{{ request.user.nama_lengkap }}{% else %}{{ request.user.username }}{% endif %}
+        </strong>
+      </div>
+      <form method="post" action="{% url 'admin_panel:logout' %}" class="footer-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="footer-logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="admin-main">
+    {% if messages %}
+      {% for m in messages %}
+        <div class="admin-alert alert-{{ m.tags }}">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+
+<!-- SCRIPT UNTUK TOGGLE MENU MOBILE -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (!menuBtn || !sidebar || !overlay) return;
+
+    function toggleMenu() {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+
+    menuBtn.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+  });
+</script>
+
+<!-- Script otomatis agar semua tabel bisa digeser -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tables = document.querySelectorAll('table.admin-table');
+
+    tables.forEach(function (table) {
+      if (table.parentElement && table.parentElement.classList.contains('table-responsive')) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-responsive';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

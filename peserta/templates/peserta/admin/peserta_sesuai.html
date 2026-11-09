@@ -1,0 +1,111 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Data Sesuai{% endblock %}
+{% block content %}
+
+<div class="admin-topbar" style="flex-wrap: wrap; gap: 16px; align-items: center;">
+  <div>
+    <h1 class="admin-page-title">Data Terverifikasi</h1>
+    <div class="admin-page-subtitle">{{ total }} peserta telah mengonfirmasi datanya sesuai</div>
+  </div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <a href="{% url 'admin_panel:export_excel_download' %}?scope=filter&verified=yes{% if q %}&q={{ q|urlencode }}{% endif %}{% if kab_filter %}&kabupaten={{ kab_filter|urlencode }}{% endif %}"
+       class="btn btn-success"
+       style="white-space: nowrap;">
+      <i class="fas fa-file-excel"></i> Download Data Sesuai ({{ total }})
+    </a>
+    <a href="{% url 'admin_panel:export_excel' %}"
+       class="btn btn-secondary"
+       style="white-space: nowrap;">
+      <i class="fas fa-filter"></i> Filter Lengkap
+    </a>
+  </div>
+</div>
+
+<form method="get" class="filter-bar" style="flex-wrap: wrap;">
+  <input type="text" name="q" value="{{ q }}" placeholder="Cari nama/NIP/NIK..." style="flex: 1; min-width: 200px;">
+  
+  <select name="kabupaten" onchange="this.form.submit()">
+    <option value="">Semua Kabupaten</option>
+    {% for k in kabupaten_list %}
+      <option value="{{ k }}" {% if kab_filter == k %}selected{% endif %}>{{ k }}</option>
+    {% endfor %}
+  </select>
+  
+  <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+    <i class="fas fa-search"></i> Cari
+  </button>
+</form>
+
+<div class="table-responsive">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th class="hide-on-mobile">No</th>
+        <th>Nama Peserta</th>
+        <th>NIK / NIP</th>
+        <th>Kabupaten</th>
+        <th>Waktu Konfirmasi</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in page %}
+      <tr>
+        <td class="hide-on-mobile">{{ page.start_index|add:forloop.counter0 }}</td>
+        <td>
+          <span class="nama-peserta">{{ p.nama }}</span>
+          <span class="instansi-peserta">{{ p.tempat_tugas|default:"-" }}</span>
+        </td>
+        <td style="font-size: 12px; white-space: nowrap;">
+          {% if p.nip %}<div style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; display: inline-block;">NIP: {{ p.nip }}</div><br>{% endif %}
+          {% if p.nik %}<div style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; display: inline-block;">NIK: {{ p.nik }}</div>{% endif %}
+          {% if not p.nip and not p.nik %}-{% endif %}
+        </td>
+        <td>{{ p.kabupaten|default:"-" }}</td>
+        <td>
+          <span class="badge badge-approved" style="white-space: nowrap;">
+            <i class="fas fa-check-circle"></i> {{ p.verified_at|date:"d M Y, H:i" }}
+          </span>
+        </td>
+        <td style="white-space: nowrap;">
+          <div style="display: flex; gap: 6px; align-items: center;">
+            
+            <!-- TOMBOL WHATSAPP -->
+            {% if p.nomor_wa %}
+              <a href="https://wa.me/{{ p.nomor_wa }}?text=Halo%20Bapak/Ibu%20{{ p.nama|urlencode }}%2C%20terkait%20perbaikan%20data%20Anda..." 
+                 target="_blank" 
+                 class="btn btn-sm" 
+                 style="background-color: #25D366; color: white; border: none;" 
+                 title="Hubungi via WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled title="Nomor WA belum diisi">
+                <i class="fab fa-whatsapp"></i>
+              </button>
+            {% endif %}
+
+            <!-- TOMBOL BATAL VERIFIKASI -->
+            <form method="post" action="{% url 'admin_panel:peserta_batal_sesuai' p.id %}" style="margin: 0;" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan verifikasi ini? Peserta harus mengonfirmasi ulang datanya.');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" title="Batalkan Verifikasi / Tandai Salah">
+                <i class="fas fa-undo"></i> Batal
+              </button>
+            </form>
+
+            <!-- TOMBOL DETAIL -->
+            <a href="{% url 'admin_panel:peserta_detail' p.id %}" class="btn btn-primary btn-sm">Detail</a>
+            
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">Belum ada peserta yang mengonfirmasi datanya.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends 'peserta/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- ========================================== -->
+<!-- HEADER: LOGO & SELAMAT DATANG              -->
+<!-- ========================================== -->
+<div class="card" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 20px; border-left: 5px solid var(--primary); background: linear-gradient(to right, #ffffff, #eff6ff); text-align: center;">
+  <div style="flex-shrink: 0;">
+    <img src="{% static 'images/logo.webp' %}" alt="Logo BGTK NTT" style="height: 75px; width: auto; object-fit: contain;">
+  </div>
+  <div style="flex: 1; min-width: 250px;">
+    <h2 style="margin: 0; font-size: 20px; color: var(--text-main); font-weight: 700; line-height: 1.4;">
+      Selamat Datang,<br class="mobile-only"> {{ peserta.nama }}
+    </h2>
+    <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 13px; line-height: 1.5;">
+      Sistem Perbaikan Data Guru Terdampak Gempa Flores <br>
+      <strong>Balai Guru dan Tenaga Kependidikan (BGTK) Provinsi NTT</strong>
+    </p>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- LOGIKA KELENGKAPAN DATA                    -->
+<!-- ========================================== -->
+{% if peserta.nomor_rekening and peserta.bank and peserta.atas_nama_rekening and data_profil_lengkap %}
+  {% with data_lengkap=True %}
+  
+  <!-- Jika Data SUDAH LENGKAP -->
+  {% if peserta.is_data_verified %}
+    <div class="alert alert-success" style="display: flex; align-items: start; gap: 12px; border-left: 4px solid var(--success); margin-bottom: 24px;">
+      <i class="fas fa-check-circle" style="font-size: 24px; margin-top: 2px;"></i>
+      <div>
+        <strong>Data Anda sudah dikonfirmasi</strong><br>
+        <span style="font-size: 13px;">Anda mengonfirmasi data pada {{ peserta.verified_at|date:"d M Y, H:i" }} WIB. Data profil yang tidak dimiliki sudah dinyatakan.</span>
+      </div>
+    </div>
+  {% else %}
+    <div class="card" style="border-left: 5px solid var(--success); background: #f0fdf4; margin-bottom: 24px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+        <div style="flex: 1; min-width: 250px;">
+          <h3 style="margin: 0 0 6px 0; font-size: 18px; color: #166534;">
+            <i class="fas fa-clipboard-check"></i> Data Siap Dikonfirmasi
+          </h3>
+          <p style="margin: 0; font-size: 14px; color: #15803d;">
+            Data rekening wajib sudah lengkap dan seluruh data profil sudah diisi atau dinyatakan tidak dimiliki. Silakan periksa lalu konfirmasi.
+          </p>
+        </div>
+        <form method="post" action="{% url 'peserta:tandai_data_sesuai' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success" style="padding: 12px 24px; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);" onclick="return confirm('Apakah seluruh data Anda sudah benar?');">
+            <i class="fas fa-check-double"></i> Konfirmasi Data
+          </button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  {% endwith %}
+{% else %}
+
+  <!-- Jika Data BELUM LENGKAP -->
+  <div class="card" style="border-left: 5px solid var(--danger); background: #fef2f2; margin-bottom: 24px;">
+    <div style="display: flex; align-items: flex-start; gap: 16px;">
+      <i class="fas fa-exclamation-triangle" style="font-size: 28px; color: #ef4444; margin-top: 2px;"></i>
+      <div>
+        <h3 style="margin: 0 0 6px 0; font-size: 18px; color: #991b1b;">
+          Data Belum Lengkap
+        </h3>
+        <p style="margin: 0 0 12px 0; font-size: 14px; color: #b91c1c;">
+          Konfirmasi terkunci karena rekening wajib belum lengkap atau masih ada data profil yang belum diisi/dinyatakan tidak dimiliki:
+        </p>
+        <ul style="margin: 0 0 16px 20px; padding: 0; font-size: 13px; color: #7f1d1d;">
+          {% if not peserta.nomor_rekening %}<li>Nomor Rekening Bank</li>{% endif %}
+          {% if not peserta.bank %}<li>Nama Bank</li>{% endif %}
+          {% if not peserta.atas_nama_rekening %}<li>Nama Pemilik Rekening (Atas Nama)</li>{% endif %}
+          {% for label in data_belum_lengkap %}<li>{{ label }}</li>{% endfor %}
+        </ul>
+        <button class="btn btn-danger" disabled style="cursor: not-allowed; opacity: 0.7;">
+          <i class="fas fa-lock"></i> Konfirmasi Terkunci (Lengkapi Data Dulu)
+        </button>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% if data_belum_lengkap %}
+  <div class="alert alert-info" style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px;">
+    <i class="fas fa-info-circle" style="font-size: 20px; margin-top: 2px;"></i>
+    <div>
+      <strong>Data pelengkap perlu dilengkapi</strong>
+      <span>Isi setiap data yang Anda miliki. Jika memang tidak memiliki data tertentu, buka perbaikannya dan nyatakan demikian. Data kosong tanpa pernyataan tetap dianggap belum lengkap.</span>
+      <div style="margin-top: 6px;">{{ data_belum_lengkap|join:", " }}</div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- ========================================== -->
+<!-- PEMBERITAHUAN PENTING                      -->
+<!-- ========================================== -->
+<div class="alert alert-warning" style="display: flex; align-items: flex-start; gap: 12px; border-left: 4px solid #f59e0b; font-size: 13px; line-height: 1.5; margin-bottom: 24px;">
+  <i class="fas fa-exclamation-circle" style="font-size: 22px; color: #f59e0b; flex-shrink: 0; margin-top: 2px;"></i>
+  <div>
+    <strong>Penting:</strong> Pastikan <b>Nomor Rekening</b>, <b>Bank</b>, dan <b>Atas Nama</b> di bawah ini sudah benar. Rekening ini akan digunakan untuk penyaluran bantuan/dana stimulan.
+  </div> 
+</div>
+
+{% if show_wa_banner %}
+  <div class="banner" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px;">
+    <span style="flex: 1; min-width: 200px; font-size: 13px; line-height: 1.5;">
+      <i class="fab fa-whatsapp" style="color: #25D366; font-size: 18px; margin-right: 4px;"></i> 
+      Nomor WhatsApp belum diisi. Isi agar Anda bisa dihubungi terkait pencairan bantuan.
+    </span>
+    <a href="{% url 'peserta:popup_wa' %}" class="btn btn-sm btn-primary" style="background: var(--primary); color: white; white-space: nowrap;">Isi Sekarang</a>
+  </div>
+{% endif %}
+
+<!-- ========================================== -->
+<!-- DATA REKENING                              -->
+<!-- ========================================== -->
+<div class="card" style="border: 2px solid var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.15);">
+  <div class="card-header" style="border-bottom-color: var(--primary-light);">
+    <h2 class="card-title primary" style="font-size: 16px;"><i class="fas fa-university" style="margin-right: 8px;"></i> Data Rekening Bantuan</h2>
+  </div>
+  <div class="data-list">
+    <div class="data-row">
+      <div class="data-label">Nomor Rekening</div>
+      <div class="data-value" style="font-family: monospace; font-size: 15px; font-weight: bold; word-break: break-all;">{{ peserta.rekening_masked }}</div>
+      <a href="{% url 'peserta:perbaikan' 'nomor_rekening' %}" class="data-action"><i class="fas fa-edit"></i> Ubah</a>
+    </div>
+    <div class="data-row">
+      <div class="data-label">Bank</div>
+      <div class="data-value">{{ peserta.bank|default:"-" }}</div>
+      <a href="{% url 'peserta:perbaikan' 'bank' %}" class="data-action"><i class="fas fa-edit"></i> Ubah</a>
+    </div>
+    <div class="data-row">
+      <div class="data-label">Atas Nama</div>
+      <div class="data-value">{{ peserta.atas_nama_rekening|default:"-" }}</div>
+      <a href="{% url 'peserta:perbaikan' 'atas_nama_rekening' %}" class="data-action"><i class="fas fa-edit"></i> Ubah</a>
+    </div>
+  </div>
+  <div class="alert alert-info mt-4" style="background: #eff6ff; border-color: #3b82f6; color: #1e40af; font-size: 13px; margin-bottom: 0;">
+    <i class="fas fa-shield-alt" style="margin-right: 4px;"></i> Demi keamanan, setiap perubahan rekening <b>wajib diverifikasi</b> oleh admin BGTK.
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- DATA PRIBADI                               -->
+<!-- ========================================== -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title primary" style="font-size: 16px;"><i class="fas fa-id-card" style="margin-right: 8px;"></i> Data Kepegawaian Anda</h2>
+    <span class="badge badge-primary" style="font-size: 10px;">{{ peserta.get_status_akun_display }}</span>
+  </div>
+  <div class="data-list">
+    {% for label, value, key in fields %}
+      <div class="data-row">
+        <div class="data-label">{{ label }}</div>
+        <div class="data-value" style="word-break: break-word;">{{ value }}</div>
+        <a href="{% url 'peserta:perbaikan' key %}" class="data-action">
+          <i class="fas fa-edit"></i> Ubah
+        </a>
+        {% if key in data_kepegawaian_fields and value == '-' and key in pending_fields %}
+          <span class="badge badge-pending" style="font-size: 10px;">Pernyataan menunggu admin</span>
+        {% elif key in data_kepegawaian_fields and value == '-' %}
+          <form method="post" action="{% url 'peserta:ajukan_tidak_dimiliki' key %}" style="margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            {% csrf_token %}
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
+              <input type="checkbox" name="tidak_dimiliki" value="1" required>
+              Saya tidak memiliki data ini
+            </label>
+            <button type="submit" class="btn btn-secondary btn-sm">Ajukan</button>
+          </form>
+        {% elif key in data_kepegawaian_fields and value == 'Tidak memiliki' %}
+          <span class="badge badge-success" style="font-size: 10px;">Dinyatakan tidak memiliki</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MENUNGGU VERIFIKASI ADMIN                  -->
+<!-- ========================================== -->
+{% if perbaikan_pending %}
+<div class="card">
+  <h2 class="card-title primary mb-4" style="font-size: 16px;"><i class="fas fa-clock" style="margin-right: 8px;"></i> Menunggu Verifikasi Admin</h2>
+  
+  <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); border: 1px solid var(--border);">
+    <table class="table" style="margin-bottom: 0; min-width: 500px;">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Nilai Baru</th>
+          <th>Status</th>
+          <th>Tanggal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in perbaikan_pending %}
+          <tr>
+            <td>{{ p.get_field_name_display }}</td>
+            <td style="word-break: break-word;">{% if p.tidak_dimiliki %}Menyatakan tidak memiliki data{% else %}{{ p.nilai_baru }}{% endif %}</td>
+            <td><span class="badge badge-pending" style="font-size: 10px;">{{ p.get_status_display }}</span></td>
+            <td style="white-space: nowrap;">{{ p.created_at|date:"d M Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================== -->
+<!-- NOTIFIKASI TERBARU                         -->
+<!-- ========================================== -->
+{% if notifikasi_terbaru %}
+<div class="card">
+  <h2 class="card-title primary mb-4" style="font-size: 16px;"><i class="fas fa-bell" style="margin-right: 8px;"></i> Notifikasi Terbaru</h2>
+  {% for n in notifikasi_terbaru %}
+    <div style="padding: 12px; border-bottom: 1px solid var(--border); {% if not n.sudah_dibaca %}background: var(--primary-light); border-radius: 6px; font-weight: 600;{% endif %} margin-bottom: 6px;">
+      <div style="font-size: 14px; word-break: break-word;">{{ n.judul }}</div>
+      <small class="text-muted" style="display: block; margin-top: 4px; font-size: 12px;"><i class="far fa-clock"></i> {{ n.created_at|date:"d M Y H:i" }}</small>
+    </div>
+  {% endfor %}
+  <a href="{% url 'peserta:notifikasi' %}" class="btn btn-secondary btn-block mt-4" style="font-size: 13px;">
+    Lihat Semua <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

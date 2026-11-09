@@ -1,0 +1,53 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+  <h2 class="card-title primary mb-2">Verifikasi Identitas</h2>
+  <p class="text-muted mb-4">{{ peserta.nama }} — {{ peserta.tempat_tugas|default:"-" }}, {{ peserta.kabupaten|default:"-" }}</p>
+
+  {% if error %}
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">
+        {% if available_methods|length == 1 %}
+          Verifikasi dengan data berikut:
+        {% else %}
+          Pilih metode verifikasi:
+        {% endif %}
+      </label>
+
+      {% if available_methods|length == 1 %}
+        {# Kalau hanya 1 metode, tampilkan sebagai info, tidak perlu radio #}
+        {% for radio in form.metode %}
+          <div style="padding: 12px; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; margin-bottom: 12px;">
+            <strong>Data yang tersedia: {{ radio.choice_label }}</strong>
+            <!-- Hidden input agar form tetap tahu metode apa yang dipilih -->
+            <div style="display: none;">{{ radio.tag }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        {% for radio in form.metode %}
+          <div style="padding: 8px 0; display: flex; align-items: center; gap: 8px;">
+            {{ radio.tag }} <label>{{ radio.choice_label }}</label>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Masukkan nilai</label>
+      {{ form.nilai }}
+      <small class="form-help">Untuk tanggal lahir, format: YYYY-MM-DD (misal: 1986-03-03)</small>
+    </div>
+
+    <!-- TOMBOL AKSI -->
+    <button type="submit" class="btn btn-primary btn-block mt-4">Verifikasi & Masuk</button>
+    <a href="{% url 'peserta:cari' %}" class="btn btn-secondary btn-block mt-2">Batal / Kembali ke Pencarian</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<style>
+  /* CSS Khusus Dashboard */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 992px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr; /* Jadi 1 kolom di tablet/HP */
+    }
+  }
+</style>
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Dashboard</h1>
+    <div class="admin-page-subtitle">Selamat datang, {{ request.user.nama_lengkap|default:request.user.username }}!</div>
+  </div>
+  <div class="admin-user">
+    <a href="/admin/" target="_blank"><i class="fas fa-external-link-alt"></i> Django Admin</a>
+  </div>
+</div>
+
+<!-- MONITORING SLOT AKTIVASI -->
+<div class="slot-monitor">
+  <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 10px;">
+    <div>
+      <div class="admin-card-title" style="margin-bottom: 4px; display: block;">Monitor Slot Aktivasi</div>
+      <div style="font-size: 12px; color: #64748b;">
+        {% if slot_status == 'aman' %}
+          <i class="fas fa-circle" style="color: #10b981; margin-right: 4px;"></i> Aman — form aktivasi terbuka
+        {% elif slot_status == 'waspada' %}
+          <i class="fas fa-circle" style="color: #f59e0b; margin-right: 4px;"></i> Waspada — hampir penuh
+        {% else %}
+          <i class="fas fa-circle" style="color: #ef4444; margin-right: 4px;"></i> Penuh — form aktivasi ditutup otomatis
+        {% endif %}
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size: 24px; font-weight: 700; color: #0f172a;">{{ slot_terpakai }}/{{ slot_batas }}</div>
+      <div style="font-size: 11px; color: #64748b;">slot terpakai</div>
+    </div>
+  </div>
+
+  <div class="slot-bar">
+    <div class="slot-bar-fill {{ slot_warna }}" style="width: {{ persen_slot }}%;">
+      {% if persen_slot > 15 %}{{ persen_slot }}%{% endif %}
+    </div>
+  </div>
+
+  <div class="slot-detail">
+    <div class="slot-detail-item">
+      <strong>{{ aktivasi_pending }}</strong>
+      <span>Pending</span>
+    </div>
+    <div class="slot-detail-item">
+      <strong>{{ aktivasi_draft }}</strong>
+      <span>Draft aktif</span>
+    </div>
+    <div class="slot-detail-item">
+      <strong style="color: {% if slot_tersedia > 10 %}#10b981{% else %}#ef4444{% endif %};">{{ slot_tersedia }}</strong>
+      <span>Slot tersedia</span>
+    </div>
+    {% if aktivasi_terlambat %}
+    <div class="slot-detail-item">
+      <strong style="color: #ef4444;">{{ aktivasi_terlambat }}</strong>
+      <span><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Pending >{{ setting.auto_reject_pending_hari }} hari</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- STAT GRID -->
+<div class="stat-grid">
+  <div class="stat-box">
+    <div class="stat-box-value">{{ total_peserta|floatformat:"0" }}</div>
+    <div class="stat-box-label">Total Peserta</div>
+    <div class="stat-box-sub">{{ peserta_aktif }} aktif · {{ peserta_belum_identitas }} belum punya identitas</div>
+  </div>
+  <div class="stat-box amber">
+    <div class="stat-box-value">{{ perbaikan_count }}</div>
+    <div class="stat-box-label">Perbaikan Pending</div>
+    <div class="stat-box-sub">+{{ perbaikan_minggu }} minggu ini</div>
+  </div>
+  <div class="stat-box green">
+    <div class="stat-box-value">{{ login_hari_ini }}</div>
+    <div class="stat-box-label">Login Hari Ini</div>
+    <div class="stat-box-sub">{{ login_gagal_hari_ini }} percobaan gagal</div>
+  </div>
+  <div class="stat-box {% if peserta_pending_aktivasi %}red{% else %}gray{% endif %}">
+    <div class="stat-box-value">{{ peserta_pending_aktivasi }}</div>
+    <div class="stat-box-label">Peserta Pending Aktivasi</div>
+    <div class="stat-box-sub">Menunggu persetujuan</div>
+  </div>
+</div>
+
+<!-- AKSI CEPAT -->
+<div class="dashboard-grid">
+
+  <!-- PERBAIKAN TERBARU -->
+  <div class="admin-card">
+    <div class="admin-card-title">
+      <span>
+        <i class="fas fa-edit" style="color: #2563eb;"></i> 
+        Perbaikan Terbaru
+      </span>
+      <a href="{% url 'admin_panel:perbaikan_list' %}" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+        Lihat Semua <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    {% if perbaikan_terbaru %}
+    <table class="admin-table">
+      <thead>
+        <tr><th>Peserta</th><th>Field</th><th>Waktu</th></tr>
+      </thead>
+      <tbody>
+        {% for p in perbaikan_terbaru %}
+        <tr style="cursor: pointer;" onclick="window.location='{% url 'admin_panel:perbaikan_detail' p.id %}'">
+          <td><strong>{{ p.peserta.nama|truncatechars:25 }}</strong></td>
+          <td>{{ p.get_field_name_display }}</td>
+          <td style="font-size: 11px; color: #64748b; white-space: nowrap;">{{ p.created_at|date:"d M H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 13px;">
+      Tidak ada perbaikan pending. <i class="fas fa-check-circle" style="color: #10b981; font-size: 16px; margin-left: 4px;"></i>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- AKTIVASI TERBARU -->
+  <div class="admin-card">
+    <div class="admin-card-title">
+      <span>
+        <i class="fas fa-file-signature" style="color: #f59e0b;"></i> 
+        Aktivasi Terbaru
+      </span>
+      <a href="{% url 'admin_panel:aktivasi_list' %}" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+        Lihat Semua <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    {% if aktivasi_terbaru %}
+    <table class="admin-table">
+      <thead>
+        <tr><th>Ref</th><th>Peserta</th><th>Waktu</th></tr>
+      </thead>
+      <tbody>
+        {% for p in aktivasi_terbaru %}
+        <tr style="cursor: pointer;" onclick="window.location='{% url 'admin_panel:aktivasi_detail' p.id %}'">
+          <td><strong>{{ p.nomor_referensi }}</strong></td>
+          <td>{{ p.peserta.nama|truncatechars:20 }}</td>
+          <td style="font-size: 11px; color: #64748b; white-space: nowrap;">{{ p.created_at|date:"d M H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 13px;">
+      Tidak ada aktivasi pending. <i class="fas fa-check-circle" style="color: #10b981; font-size: 16px; margin-left: 4px;"></i>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

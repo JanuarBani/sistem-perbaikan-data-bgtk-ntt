@@ -1,0 +1,144 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Edit Peserta{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Edit: {{ peserta.nama }}</h1>
+    <div class="admin-page-subtitle">
+      <a href="{% url 'admin_panel:peserta_detail' peserta.id %}" style="color: #2563eb; text-decoration: none;">
+        ← Kembali ke detail
+      </a>
+    </div>
+  </div>
+</div>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <!-- TAMBAHKAN BARIS INI -->
+  <input type="hidden" name="return_url" value="{{ request.GET.urlencode }}">
+
+  <div class="detail-grid">
+    <!-- KARTU 1: IDENTITAS -->
+    <div class="admin-card">
+      <div class="admin-card-title">Identitas</div>
+
+      <div class="form-group">
+        <label for="f-nama">Nama Lengkap &amp; Gelar</label>
+        <input type="text" id="f-nama" name="nama" value="{{ peserta.nama }}" class="form-input" required>
+        <small class="form-help">Termasuk gelar. Nama normalized akan diupdate otomatis.</small>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="f-nuptk">NUPTK</label>
+          <input type="text" id="f-nuptk" name="nuptk" value="{{ peserta.nuptk|default:'' }}" class="form-input" placeholder="16 digit">
+        </div>
+
+        <div class="form-group">
+          <label for="f-nip">NIP</label>
+          <input type="text" id="f-nip" name="nip" value="{{ peserta.nip|default:'' }}" class="form-input" placeholder="18 digit">
+        </div>
+
+        <div class="form-group">
+          <label for="f-nik">NIK</label>
+          <input type="text" id="f-nik" name="nik" value="{{ peserta.nik|default:'' }}" class="form-input" placeholder="16 digit">
+        </div>
+
+        <div class="form-group">
+          <label for="f-wa">Nomor WhatsApp</label>
+          <input type="text" id="f-wa" name="nomor_wa" value="{{ peserta.nomor_wa|default:'' }}" class="form-input" placeholder="08xxxxxxxxxx">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f-status">Status Akun</label>
+        <select name="status_akun" id="f-status" class="form-select">
+          {% for val, label in peserta.STATUS_CHOICES %}
+            <option value="{{ val }}" {% if peserta.status_akun == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- KARTU 2: INSTANSI -->
+    <div class="admin-card">
+      <div class="admin-card-title">Instansi &amp; Wilayah</div>
+
+      <div class="form-group">
+        <label for="f-tempat">Tempat Tugas</label>
+        <input type="text" id="f-tempat" name="tempat_tugas" value="{{ peserta.tempat_tugas }}" class="form-input" placeholder="Contoh: SDN 01 Pelaihari">
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="f-npsn">NPSN</label>
+          <input type="text" id="f-npsn" name="npsn" value="{{ peserta.npsn }}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="f-jenjang">Jenjang</label>
+          <input type="text" id="f-jenjang" name="jenjang" value="{{ peserta.jenjang }}" class="form-input" placeholder="SD/SMP/SMA">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f-kecamatan">Kecamatan</label>
+        <input type="text" id="f-kecamatan" name="kecamatan" value="{{ peserta.kecamatan }}" class="form-input">
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label for="f-kabupaten">Kabupaten</label>
+          <input type="text" id="f-kabupaten" name="kabupaten" value="{{ peserta.kabupaten }}" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="f-provinsi">Provinsi</label>
+          <input type="text" id="f-provinsi" name="provinsi" value="{{ peserta.provinsi }}" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f-jabatan">Jabatan</label>
+        <input type="text" id="f-jabatan" name="jabatan" value="{{ peserta.jabatan }}" class="form-input">
+      </div>
+    </div>
+  </div>
+
+  <!-- KARTU 3: REKENING -->
+  <div class="admin-card">
+    <div class="admin-card-title">
+      Rekening Bank
+      <span style="font-size: 11px; background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 10px; font-weight: 700;">
+        DATA SENSITIF
+      </span>
+    </div>
+
+    <div class="form-info-box warning">
+      ⚠️ Hati-hati mengubah data rekening. Pastikan perubahan didukung dokumen resmi (buku rekening / SK). Setiap perubahan tercatat di log audit.
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label for="f-rek">Nomor Rekening</label>
+        <input type="text" id="f-rek" name="nomor_rekening" value="{{ peserta.nomor_rekening|default:'' }}" class="form-input" placeholder="Nomor rekening tanpa spasi">
+      </div>
+      <div class="form-group">
+        <label for="f-bank">Nama Bank</label>
+        <input type="text" id="f-bank" name="bank" value="{{ peserta.bank|default:'' }}" class="form-input" placeholder="Contoh: Bank BRI">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="f-an">Atas Nama Rekening</label>
+      <input type="text" id="f-an" name="atas_nama_rekening" value="{{ peserta.atas_nama_rekening|default:'' }}" class="form-input" placeholder="Nama sesuai buku rekening">
+    </div>
+  </div>
+
+  <!-- TOMBOL AKSI -->
+  <div class="action-buttons">
+    <button type="submit" class="btn btn-success">💾 Simpan Perubahan</button>
+    <a href="{% url 'admin_panel:peserta_list' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">Batal</a>
+  </div>
+</form>
+
+{% endblock %}

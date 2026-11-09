@@ -1,0 +1,107 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Notifikasi{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Notifikasi</h1>
+    <div class="admin-page-subtitle">{{ total }} notifikasi terdaftar</div>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <!-- Tombol Hapus Semua -->
+    <form method="post" action="{% url 'admin_panel:notifikasi_delete_all' %}" 
+          onsubmit="return confirm('⚠️ PERINGATAN: Anda akan menghapus SELURUH notifikasi dari sistem.\n\nTindakan ini tidak dapat dibatalkan. Yakin?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">🗑️ Hapus Semua</button>
+    </form>
+    <!-- Tombol Kirim -->
+    <a href="{% url 'admin_panel:notifikasi_send' %}" class="btn btn-primary">+ Kirim Notifikasi</a>
+  </div>
+</div>
+
+<form method="get" class="filter-bar">
+  <input type="text" name="q" value="{{ q }}" placeholder="Cari nama peserta / judul..." style="flex: 1;">
+  <select name="tipe" onchange="this.form.submit()">
+    <option value="">Semua Tipe</option>
+    {% for val, label in tipe_choices %}
+      <option value="{{ val }}" {% if tipe_filter == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+</form>
+
+<div class="admin-card" style="padding: 0; overflow: hidden;">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Waktu</th>
+        <th>Peserta</th>
+        <th>Tipe</th>
+        <th>Judul</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in page %}
+      <tr>
+        <td style="font-size: 11px; white-space: nowrap;">
+          {{ n.created_at|date:"d M Y" }}<br>
+          <span style="color:#64748b;">{{ n.created_at|date:"H:i" }}</span>
+        </td>
+        <td>
+          <a href="{% url 'admin_panel:peserta_detail' n.peserta.id %}" style="color: #2563eb; font-weight: 600; text-decoration: none;">
+            {{ n.peserta.nama }}
+          </a>
+        </td>
+        <td><span class="badge badge-primary" style="font-size:10px;">{{ n.get_tipe_display }}</span></td>
+        
+        <!-- Judul bisa diklik untuk baca -->
+        <td>
+          <a href="{% url 'admin_panel:notifikasi_detail' n.id %}" 
+             style="color: {% if not n.sudah_dibaca %}#0f172a{% else %}#64748b{% endif %}; 
+                    font-weight: {% if not n.sudah_dibaca %}700{% else %}400{% endif %}; 
+                    text-decoration: none;">
+            {{ n.judul|truncatechars:40 }}
+          </a>
+        </td>
+        
+        <td>
+          {% if n.sudah_dibaca %}
+            <span class="badge badge-approved">Dibaca</span>
+          {% else %}
+            <span class="badge badge-pending">Belum</span>
+          {% endif %}
+        </td>
+        
+        <td style="white-space: nowrap;">
+          <!-- Tombol Toggle Baca -->
+          <form method="post" action="{% url 'admin_panel:notifikasi_toggle_read' n.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm" title="Tandai Dibaca / Belum">
+              {% if n.sudah_dibaca %}📩{% else %}✅{% endif %}
+            </button>
+          </form>
+          
+          <!-- Tombol Hapus -->
+          <form method="post" action="{% url 'admin_panel:notifikasi_delete' n.id %}" style="display:inline;" 
+                onsubmit="return confirm('Hapus notifikasi ini?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm" title="Hapus">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+          Belum ada notifikasi.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+{% endblock %}

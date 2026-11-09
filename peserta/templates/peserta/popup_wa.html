@@ -1,0 +1,60 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+  <div class="text-center" style="margin-bottom: 24px;">
+    <div style="width: 64px; height: 64px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 28px;">
+      <i class="fab fa-whatsapp"></i>
+    </div>
+    <h2 class="card-title primary" style="justify-content: center;">Selamat Datang, {{ peserta.nama }}!</h2>
+    <p class="text-muted" style="margin-top: 8px;">
+      Tambahkan nomor WhatsApp jika Anda ingin menerima pemberitahuan dari admin.
+    </p>
+  </div>
+
+  <div class="alert alert-info" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
+    <i class="fas fa-info-circle" style="font-size: 18px; margin-top: 2px;"></i>
+    <div style="font-size: 13px;">
+      Nomor WhatsApp <strong>opsional</strong>. Jika diisi, admin BGTK dapat menghubungi Anda terkait:
+      <ul style="margin: 6px 0 0 20px;">
+        <li>Perubahan data Anda (disetujui/ditolak)</li>
+        <li>Pencairan bantuan/dana stimulan</li>
+        <li>Permintaan upload ulang dokumen</li>
+      </ul>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label">
+        Nomor WhatsApp <span class="text-muted">(opsional)</span>
+      </label>
+      {{ form.nomor_wa }}
+      <small class="text-muted">
+        <i class="fas fa-shield-alt"></i>
+        Nomor ini hanya untuk notifikasi resmi, tidak akan dipublikasikan.
+      </small>
+      {% if form.nomor_wa.errors %}
+        <div class="alert alert-error" style="margin-top: 8px;">
+          <i class="fas fa-exclamation-circle"></i> {{ form.nomor_wa.errors.0 }}
+        </div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-success btn-block" style="padding: 14px; font-size: 15px;">
+      <i class="fab fa-whatsapp"></i> Simpan & Lanjut ke Dashboard
+    </button>
+    <a href="{% url 'peserta:dashboard' %}" class="btn btn-secondary btn-block" style="margin-top: 10px;">
+      Lewati, lanjut ke Dashboard
+    </a>
+  </form>
+
+  <div class="alert alert-warning" style="margin-top: 20px; display: flex; align-items: flex-start; gap: 10px;">
+    <i class="fas fa-exclamation-triangle" style="font-size: 16px; margin-top: 2px;"></i>
+    <div style="font-size: 12px;">
+      <strong>Catatan:</strong> Tanpa nomor WhatsApp, admin tidak dapat mengirim pemberitahuan melalui WhatsApp.
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Halaman Tidak Ditemukan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #eff6ff 0%, #f1f5f9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #0f172a;
+    }
+    .error-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 60px 40px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow:
+        0 20px 60px rgba(37, 99, 235, 0.15),
+        0 0 0 1px rgba(37, 99, 235, 0.05);
+    }
+    .error-icon {
+      font-size: 42px;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+    .error-code {
+      font-size: 120px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      letter-spacing: -4px;
+    }
+    .error-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+    .error-subtitle {
+      font-size: 15px;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .error-subtitle strong {
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover {
+      background: #1e40af;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+    .help-text {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .help-text a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .help-text a:hover { text-decoration: underline; }
+    @media (max-width: 480px) {
+      .error-card { padding: 40px 24px; }
+      .error-code { font-size: 84px; letter-spacing: -2px; }
+      .error-title { font-size: 20px; }
+      .error-subtitle { font-size: 14px; }
+      .btn { padding: 10px 18px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="error-card">
+    <div class="error-icon">
+      <i class="fas fa-map-location-dot"></i>
+    </div>
+    <div class="error-code">404</div>
+    <h1 class="error-title">Halaman Tidak Ditemukan</h1>
+    <p class="error-subtitle">
+      Maaf, halaman yang Anda cari <strong>tidak ada</strong> atau mungkin sudah dipindahkan.<br>
+      Periksa kembali URL Anda atau kembali ke halaman utama.
+    </p>
+    <div class="button-group">
+      <a href="javascript:history.back()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Kembali
+      </a>
+      <a href="{{ back_url }}" class="btn btn-primary">
+        <i class="fas fa-home"></i> {{ back_text }}
+      </a>
+    </div>
+    <div class="help-text">
+      Butuh bantuan? Hubungi <a href="{{ back_url }}">tim admin</a>.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Kirim Notifikasi{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Kirim Notifikasi Manual</h1>
+    <div class="admin-page-subtitle"><a href="{% url 'admin_panel:notifikasi_list' %}" style="color: #2563eb;">← Kembali</a></div>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="admin-card">
+    <div class="form-group">
+      <label>Peserta Penerima</label>
+      <select name="peserta_id" class="form-input" required>
+        <option value="">-- Pilih Peserta --</option>
+        {% for p in peserta_qs %}
+        <option value="{{ p.id }}" {% if request.GET.peserta_id == p.id|stringformat:"s" %}selected{% endif %}>
+          {{ p.nama }} — {{ p.kabupaten|default:"-" }}
+        </option>
+        {% endfor %}
+      </select>
+      <small style="color: #64748b;">Hanya 20 teratas. Untuk mencari spesifik, tambahkan <code>?q=NAMA</code> di URL.</small>
+    </div>
+
+    <div class="form-group">
+      <label>Tipe Notifikasi</label>
+      <select name="tipe" class="form-input">
+        {% for val, label in tipe_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Judul</label>
+      <input type="text" name="judul" class="form-input" required placeholder="Contoh: Data Anda perlu diperbaiki">
+    </div>
+
+    <div class="form-group">
+      <label>Isi Pesan</label>
+      <textarea name="isi" rows="5" class="form-input" required placeholder="Detail notifikasi..."></textarea>
+    </div>
+
+    <div class="action-buttons">
+      <button type="submit" class="btn btn-success">📨 Kirim Notifikasi</button>
+      <a href="{% url 'admin_panel:notifikasi_list' %}" class="btn btn-secondary">Batal</a>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

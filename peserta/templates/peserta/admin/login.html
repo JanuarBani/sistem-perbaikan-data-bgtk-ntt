@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Admin — Perbaikan Data Gempa Flores</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    /* LOGO DIPERKECIL */
+    .login-logo img {
+      max-height: 50px; /* <-- Diubah dari 80px menjadi 50px */
+      width: auto;
+      object-fit: contain;
+    }
+    .login-title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .login-subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s;
+    }
+    .btn-login:hover { background: #1e40af; }
+    .btn-login:disabled { background: #94a3b8; cursor: not-allowed; }
+    .alert-error {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .login-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .login-footer a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .show-pass {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="{% static 'images/logo.webp' %}" alt="Logo Instansi">
+    </div>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-subtitle">Perbaikan Data Guru Terdampak Gempa Flores</div>
+
+    {% if error %}
+      <div class="alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-input"
+               placeholder="Masukkan username" autofocus autocomplete="username" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-input"
+               placeholder="Masukkan password" autocomplete="current-password" required>
+        <label class="show-pass">
+          <input type="checkbox" onclick="togglePass()"> Tampilkan password
+        </label>
+      </div>
+
+      <button type="submit" class="btn-login" id="btnLogin">Masuk</button>
+    </form>
+
+    <div class="login-footer">
+      Bukan admin? <a href="/">Halaman peserta →</a>
+    </div>
+  </div>
+
+  <script>
+    function togglePass() {
+      const p = document.getElementById('password');
+      p.type = p.type === 'password' ? 'text' : 'password';
+    }
+    document.querySelector('form').addEventListener('submit', function() {
+      const btn = document.getElementById('btnLogin');
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+    });
+  </script>
+</body>
+</html>

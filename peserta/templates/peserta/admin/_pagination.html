@@ -1,0 +1,62 @@
+{# peserta/templates/peserta/admin/_pagination.html #}
+{% load pagination_tags %}
+
+{% if page.has_other_pages %}
+<nav class="pagination" aria-label="Navigasi halaman">
+
+  {# Info ringkas #}
+  <div class="pagination-info">
+    Menampilkan <strong>{{ page.start_index }}–{{ page.end_index }}</strong>
+    dari <strong>{{ page.paginator.count }}</strong> data
+  </div>
+
+  {# Tombol navigasi #}
+  <div class="pagination-controls">
+
+    {# Awal #}
+    {% if page.number > 1 %}
+      <a href="{% query_string_pages 1 %}" class="page-btn" title="Halaman pertama">« Awal</a>
+    {% else %}
+      <span class="page-btn disabled">« Awal</span>
+    {% endif %}
+
+    {# Prev #}
+    {% if page.has_previous %}
+      <a href="{% query_string_pages page.previous_page_number %}" class="page-btn" title="Halaman sebelumnya">‹ Prev</a>
+    {% else %}
+      <span class="page-btn disabled">‹ Prev</span>
+    {% endif %}
+
+    {# Nomor halaman #}
+    {% pagination_range page as pages %}
+    {% for p in pages %}
+      {% if p == '...' %}
+        <span class="page-btn ellipsis">…</span>
+      {% elif p == page.number %}
+        <span class="page-btn active" aria-current="page">{{ p }}</span>
+      {% else %}
+        <a href="{% query_string_pages p %}" class="page-btn">{{ p }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {# Next #}
+    {% if page.has_next %}
+      <a href="{% query_string_pages page.next_page_number %}" class="page-btn" title="Halaman berikutnya">Next ›</a>
+    {% else %}
+      <span class="page-btn disabled">Next ›</span>
+    {% endif %}
+
+    {# Akhir #}
+    {% if page.number < page.paginator.num_pages %}
+      <a href="{% query_string_pages page.paginator.num_pages %}" class="page-btn" title="Halaman terakhir">Akhir »</a>
+    {% else %}
+      <span class="page-btn disabled">Akhir »</span>
+    {% endif %}
+
+  </div>
+</nav>
+{% elif page.paginator.count > 0 %}
+<div class="pagination-single">
+  Menampilkan semua <strong>{{ page.paginator.count }}</strong> data.
+</div>
+{% endif %}

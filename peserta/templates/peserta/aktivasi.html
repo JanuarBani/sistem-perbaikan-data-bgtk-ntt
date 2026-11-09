@@ -1,0 +1,139 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+
+<!-- BREADCRUMB & TOMBOL KEMBALI -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+  <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+    <i class="fas fa-home"></i> Beranda 
+    <i class="fas fa-chevron-right" style="font-size: 10px; margin: 0 6px;"></i> 
+    <a href="{% url 'peserta:cari' %}" style="color: var(--text-muted); text-decoration: none;">Pencarian</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px; margin: 0 6px;"></i> 
+    Aktivasi Akun
+  </div>
+  <a href="{% url 'peserta:cari' %}" class="btn btn-secondary btn-sm" style="background: white; border: 1px solid var(--border); color: var(--text-main);">
+    <i class="fas fa-arrow-left"></i> Kembali
+  </a>
+</div>
+
+<div class="card">
+  <h2 class="card-title primary mb-2">Aktivasi Akun</h2>
+  <p class="text-muted">{{ peserta.nama }} — {{ peserta.tempat_tugas|default:"-" }}, {{ peserta.kabupaten|default:"-" }}</p>
+
+  {% if penuh %}
+    <div class="alert alert-warning mt-4">
+      <i class="fas fa-pause-circle"></i> Aktivasi sedang ditutup sementara karena banyak pengajuan. Coba lagi besok.
+    </div>
+    <a href="{% url 'peserta:cari' %}" class="btn btn-secondary btn-block mt-4">Kembali ke Pencarian</a>
+  {% else %}
+    <div class="alert alert-info mt-4">
+      <i class="fas fa-info-circle"></i> Data identitas Anda (NIK/NIP/NUPTK) belum terdaftar. Silakan isi dan unggah dokumen bukti untuk diverifikasi oleh admin.
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" class="mt-4" id="formAktivasi">
+      {% csrf_token %}
+      
+      <h3 class="mb-2" style="font-size: 15px;">Identitas (minimal salah satu)</h3>
+      <div class="form-group"><label class="form-label">NIK</label>{{ form.nik_diisi }}</div>
+      <div class="form-group"><label class="form-label">NIP</label>{{ form.nip_diisi }}</div>
+      <div class="form-group"><label class="form-label">NUPTK</label>{{ form.nuptk_diisi }}</div>
+      <div class="form-group"><label class="form-label">Nomor WhatsApp <span style="color: var(--danger);">*</span></label>{{ form.nomor_wa }}</div>
+      <div class="form-group"><label class="form-label">Alasan data identitas kosong</label>{{ form.alasan_kosong }}</div>
+
+      <h3 class="mb-2 mt-4" style="font-size: 15px;">Upload Dokumen Bukti</h3>
+      <div class="alert alert-warning" style="font-size: 12px; margin-bottom: 16px;">
+        <i class="fas fa-exclamation-circle"></i> 
+        <strong>Perhatian:</strong> Ukuran maksimal per file adalah <strong>{{ setting.ukuran_file_maksimal_mb }} MB</strong>. 
+        Format yang didukung: JPG, PNG, PDF.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">KTP <span style="color: var(--danger);">*</span></label>
+        <input type="file" name="ktp" accept="image/*,application/pdf" required class="form-input file-input" data-max-size="{{ setting.ukuran_file_maksimal_mb }}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">SK Pembagian Tugas Mengajar <span style="color: var(--danger);">*</span></label>
+        <input type="file" name="sk" accept="image/*,application/pdf" required class="form-input file-input" data-max-size="{{ setting.ukuran_file_maksimal_mb }}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Kartu Keluarga (alternatif KTP)</label>
+        <input type="file" name="kk" accept="image/*,application/pdf" class="form-input file-input" data-max-size="{{ setting.ukuran_file_maksimal_mb }}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Surat Keterangan (opsional)</label>
+        <input type="file" name="surat_keterangan" accept="image/*,application/pdf" class="form-input file-input" data-max-size="{{ setting.ukuran_file_maksimal_mb }}">
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+      
+      <!-- Tombol Aksi -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
+        <button type="submit" class="btn btn-primary btn-block" id="btnSubmit">
+          <i class="fas fa-paper-plane"></i> Kirim Pengajuan
+        </button>
+        <a href="{% url 'peserta:cari' %}" class="btn btn-secondary btn-block">
+          <i class="fas fa-times"></i> Batal / Kembali ke Pencarian
+        </a>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
+<!-- SCRIPT VALIDASI UKURAN FILE (CLIENT-SIDE) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const maxSizeMb = {{ setting.ukuran_file_maksimal_mb }};
+    const maxSizeBytes = maxSizeMb * 1024 * 1024;
+    const fileInputs = document.querySelectorAll('.file-input');
+    const form = document.getElementById('formAktivasi');
+
+    function checkFileSize(input) {
+      if (input.files.length > 0) {
+        const fileSize = input.files[0].size;
+        if (fileSize > maxSizeBytes) {
+          alert(`File "${input.files[0].name}" terlalu besar (${(fileSize / 1024 / 1024).toFixed(2)} MB).\nMaksimal ukuran file adalah ${maxSizeMb} MB.`);
+          input.value = ''; // Reset input
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Cek saat file dipilih
+    fileInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        checkFileSize(this);
+      });
+    });
+
+    // Cek sebelum form dikirim
+    form.addEventListener('submit', function(e) {
+      let isValid = true;
+      fileInputs.forEach(input => {
+        if (input.files.length > 0) {
+          const fileSize = input.files[0].size;
+          if (fileSize > maxSizeBytes) {
+            alert(`File "${input.files[0].name}" terlalu besar. Maksimal ${maxSizeMb} MB.`);
+            isValid = false;
+          }
+        }
+      });
+
+      if (!isValid) {
+        e.preventDefault(); // Batalkan submit jika ada file terlalu besar
+        return false;
+      }
+
+      // Ubah tombol jadi loading
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah...';
+    });
+  });
+</script>
+
+{% endblock %}

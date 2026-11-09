@@ -1,0 +1,92 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Detail Peserta{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">{{ peserta.nama }}</h1>
+    <div class="admin-page-subtitle"><a href="{% url 'admin_panel:peserta_list' %}" style="color: #2563eb;">← Kembali ke daftar</a></div>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <a href="{% url 'admin_panel:peserta_edit' peserta.id %}" class="btn btn-primary">✏️ Edit</a>
+    <a href="{% url 'admin_panel:notifikasi_send' %}?peserta_id={{ peserta.id }}" class="btn btn-secondary">🔔 Kirim Notifikasi</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="admin-card">
+    <div class="admin-card-title">Identitas</div>
+    <div class="detail-row"><div class="detail-label">Nama</div><div class="detail-value"><strong>{{ peserta.nama }}</strong></div></div>
+    <div class="detail-row"><div class="detail-label">Gelar</div><div class="detail-value">{{ peserta.nama_gelar|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">NUPTK</div><div class="detail-value">{{ peserta.nuptk|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">NIP</div><div class="detail-value">{{ peserta.nip|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">NIK</div><div class="detail-value">{{ peserta.nik|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Tgl Lahir</div><div class="detail-value">{{ peserta.tanggal_lahir|date:"d M Y"|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Status Akun</div><div class="detail-value"><span class="badge badge-primary">{{ peserta.get_status_akun_display }}</span></div></div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-title">Instansi</div>
+    <div class="detail-row"><div class="detail-label">Tempat Tugas</div><div class="detail-value">{{ peserta.tempat_tugas|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">NPSN</div><div class="detail-value">{{ peserta.npsn|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Kecamatan</div><div class="detail-value">{{ peserta.kecamatan|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Kabupaten</div><div class="detail-value">{{ peserta.kabupaten|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Provinsi</div><div class="detail-value">{{ peserta.provinsi|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Jenjang</div><div class="detail-value">{{ peserta.jenjang|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Jabatan</div><div class="detail-value">{{ peserta.jabatan|default:"-" }}</div></div>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-title">Rekening & Kontak</div>
+  <div class="detail-grid">
+    <div>
+      <div class="detail-row"><div class="detail-label">Nomor Rekening</div><div class="detail-value"><strong>{{ peserta.nomor_rekening|default:"-" }}</strong></div></div>
+      <div class="detail-row"><div class="detail-label">Bank</div><div class="detail-value">{{ peserta.bank|default:"-" }}</div></div>
+      <div class="detail-row"><div class="detail-label">Atas Nama</div><div class="detail-value">{{ peserta.atas_nama_rekening|default:"-" }}</div></div>
+    </div>
+    <div>
+      <div class="detail-row"><div class="detail-label">Nomor WA</div><div class="detail-value">{{ peserta.nomor_wa|default:"-" }}</div></div>
+      <div class="detail-row"><div class="detail-label">WA Confirmed</div><div class="detail-value">{% if peserta.nomor_wa_confirmed %}✅ Ya{% else %}❌ Belum{% endif %}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-title">Riwayat Perbaikan (20 terakhir)</div>
+  {% if perbaikan %}
+  <table class="admin-table">
+    <thead><tr><th>Field</th><th>Lama → Baru</th><th>Status</th><th>Waktu</th></tr></thead>
+    <tbody>
+      {% for p in perbaikan %}
+      <tr>
+        <td><strong>{{ p.get_field_name_display }}</strong></td>
+        <td style="font-size: 12px;">{{ p.nilai_lama|truncatechars:20 }} → {{ p.nilai_baru|truncatechars:20 }}</td>
+        <td><span class="badge badge-{{ p.status }}">{{ p.get_status_display }}</span></td>
+        <td style="font-size: 11px;">{{ p.created_at|date:"d M Y H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div style="padding: 20px; color: #94a3b8; text-align: center;">Belum ada perbaikan.</div>{% endif %}
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-title">Log Login (10 terakhir)</div>
+  {% if login_log %}
+  <table class="admin-table">
+    <thead><tr><th>Waktu</th><th>Status</th><th>IP</th></tr></thead>
+    <tbody>
+      {% for log in login_log %}
+      <tr>
+        <td style="font-size: 12px;">{{ log.login_at|date:"d M Y H:i" }}</td>
+        <td>{% if log.success %}<span class="badge badge-approved">Berhasil</span>{% else %}<span class="badge badge-rejected">Gagal</span>{% endif %}</td>
+        <td style="font-family: monospace; font-size: 11px;">{{ log.ip_address|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div style="padding: 20px; color: #94a3b8; text-align: center;">Belum ada login.</div>{% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Daftar Perbaikan{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Perbaikan</h1>
+    <div class="admin-page-subtitle">Review pengajuan perbaikan dari peserta</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending ({{ counts.pending }})</a>
+    <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">Disetujui ({{ counts.approved }})</a>
+    <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">Ditolak ({{ counts.rejected }})</a>
+    <a href="?status=all" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">Semua ({{ counts.total }})</a>
+  </div>
+
+  <form method="get" style="display: flex; gap: 8px; margin-left: auto;">
+    <input type="hidden" name="status" value="{{ status_filter }}">
+    <select name="field" onchange="this.form.submit()">
+      <option value="">Semua Field</option>
+      {% for val, label in field_choices %}
+        <option value="{{ val }}" {% if field_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="q" value="{{ q }}" placeholder="Cari nama/NIP/NIK...">
+    <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+  </form>
+</div>
+
+<!-- FORM UNTUK BULK ACTION -->
+<form method="post" action="{% url 'admin_panel:perbaikan_bulk_action' %}" id="bulkForm">
+  {% csrf_token %}
+  
+  <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+    <span style="font-size: 13px; font-weight: 600; color: #475569;">Aksi Massal:</span>
+    <button type="submit" name="action" value="approve" class="btn btn-success btn-sm" onclick="return confirm('Setujui semua data perbaikan yang dipilih?');">
+      <i class="fas fa-check"></i> Approve Terpilih
+    </button>
+    <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm" onclick="return confirm('Tolak semua data perbaikan yang dipilih?');">
+      <i class="fas fa-times"></i> Reject Terpilih
+    </button>
+  </div>
+
+  <div class="admin-card" style="padding: 0; overflow: hidden;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll"></th>
+          <th>No</th>
+          <th>Peserta</th>
+          <th>Field</th>
+          <th>Nilai Lama</th>
+          <th>Nilai Baru</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in perbaikan_list %}
+        <tr>
+          <td style="text-align: center;">
+            {% if p.status == 'pending' %}
+              <input type="checkbox" name="selected_ids" value="{{ p.id }}" class="row-checkbox">
+            {% endif %}
+          </td>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <strong>{{ p.peserta.nama|truncatechars:25 }}</strong><br>
+            <small style="color: #64748b;">{{ p.peserta.kabupaten }}</small>
+          </td>
+          <td><strong>{{ p.get_field_name_display }}</strong></td>
+          <td style="max-width: 150px; color: #64748b;">{{ p.nilai_lama|truncatechars:30 }}</td>
+          <td style="max-width: 150px;">{% if p.tidak_dimiliki %}<em>Menyatakan tidak memiliki data</em>{% else %}{{ p.nilai_baru|truncatechars:30 }}{% endif %}</td>
+          <td><span class="badge badge-{{ p.status }}">{{ p.get_status_display }}</span></td>
+          <td style="white-space: nowrap;">
+            <a href="{% url 'admin_panel:perbaikan_detail' p.id %}" class="btn btn-primary btn-sm">
+              {% if p.status == 'pending' %}Review{% else %}Lihat{% endif %}
+            </a>
+            
+            <!-- WHATSAPP DENGAN TEMPLATE -->
+            {% if p.peserta.nomor_wa %}
+              <div style="display: inline-block; position: relative; margin-left: 4px;">
+                <select onchange="updateWA(this, '{{ p.peserta.nomor_wa }}', '{{ p.peserta.nama|escapejs }}', '{{ p.get_field_name_display }}')" class="form-select" style="width: auto; padding: 4px 24px 4px 8px; font-size: 11px; height: 28px;">
+                  <option value="">📱 WA</option>
+                  <option value="1">Data Anda belum lengkap</option>
+                  <option value="2">Perbaikan disetujui</option>
+                  <option value="3">Dokumen KTP kurang jelas</option>
+                </select>
+              </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+            Tidak ada perbaikan dengan filter tersebut.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</form>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+<script>
+  // Fitur Select All
+  document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+  });
+
+  // Fitur WA Template
+  function updateWA(select, nomor, nama, field) {
+    if (!select.value) return;
+    
+    let text = "";
+    if (select.value === "1") {
+      text = `Halo Bapak/Ibu *${nama}*, kami melihat data kepegawaian Anda belum lengkap. Mohon segera lengkapi data melalui website Perbaikan Data Guru Terdampak Gempa Flores. Terima kasih.`;
+    } else if (select.value === "2") {
+      text = `Halo Bapak/Ibu *${nama}*, pengajuan perbaikan data *${field}* Anda telah *DISETUJUI*. Silakan cek website untuk melihat pembaruan. Terima kasih.`;
+    } else if (select.value === "3") {
+      text = `Halo Bapak/Ibu *${nama}*, dokumen KTP/SK yang Anda unggah kurang jelas. Mohon login kembali ke website dan unggah ulang dokumen yang lebih terang. Terima kasih.`;
+    }
+    
+    // Encode text dan buka WA
+    const url = `https://wa.me/${nomor}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    
+    // Reset dropdown
+    select.value = "";
+  }
+</script>
+
+{% endblock %}

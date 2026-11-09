@@ -1,0 +1,37 @@
+{% extends 'peserta/base.html' %}
+{% block content %}
+<div class="card" style="max-width: 640px; margin: 40px auto;">
+  <div class="text-center" style="margin-bottom: 24px;">
+    <div style="width: 64px; height: 64px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 28px;">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <h2 class="card-title primary" style="justify-content: center;">Persetujuan Pemrosesan Data</h2>
+  </div>
+
+  <div style="max-height: 300px; overflow-y: auto; padding: 20px; background: var(--gray-50); border-radius: var(--radius); font-size: 14px; line-height: 1.8; border: 1px solid var(--gray-200); margin-bottom: 24px;">
+    <p style="margin-bottom: 12px;"><strong>Kebijakan Privasi & Persetujuan</strong></p>
+    <p style="margin-bottom: 12px;">Dengan menggunakan sistem ini, Anda menyetujui bahwa:</p>
+    <ol style="padding-left: 20px; margin-bottom: 0;">
+      <li>Data pribadi Anda (NIK, NIP, NUPTK, nama, tempat tugas, dan rekening bank) akan diproses untuk keperluan perbaikan data.</li>
+      <li>Data disimpan dengan enkripsi untuk keamanan.</li>
+      <li>Data hanya digunakan untuk keperluan verifikasi dan perbaikan data peserta.</li>
+      <li>Anda berhak meminta akses, koreksi, atau penghapusan data sesuai UU PDP.</li>
+      <li>Dokumen bukti identitas (KTP/SK) akan dihapus otomatis setelah diverifikasi.</li>
+    </ol>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group" style="background: #f0f9ff; padding: 16px; border-radius: 8px; border: 1px solid #bae6fd;">
+      <label style="display: flex; align-items: start; gap: 12px; font-weight: 600; color: var(--primary-dark); cursor: pointer; margin: 0;">
+        {{ form.setuju }}
+        <span style="margin-top: 2px;">{{ form.setuju.label }}</span>
+      </label>
+    </div>
+    
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 24px; padding: 14px;">
+      Saya Setuju & Lanjut <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+    </button>
+  </form>
+</div>
+{% endblock %}

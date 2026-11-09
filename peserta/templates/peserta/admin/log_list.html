@@ -1,0 +1,86 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Log Aktivitas{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Log Aktivitas</h1>
+    <div class="admin-page-subtitle">{{ total }} entri</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <a href="?tab=login&q={{ q }}" class="filter-tab {% if tab == 'login' %}active{% endif %}">
+      <i class="fas fa-lock" style="margin-right: 4px;"></i> Log Login
+    </a>
+    <a href="?tab=admin&q={{ q }}" class="filter-tab {% if tab == 'admin' %}active{% endif %}">
+      <i class="fas fa-chart-bar" style="margin-right: 4px;"></i> Log Admin
+    </a>
+    <a href="?tab=contact&q={{ q }}" class="filter-tab {% if tab == 'contact' %}active{% endif %}">
+      <i class="fas fa-mobile-alt" style="margin-right: 4px;"></i> Log Contact
+    </a>
+  </div>
+  <form method="get" style="display: flex; gap: 8px; margin-left: auto;">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <input type="text" name="q" value="{{ q }}" placeholder="Cari..." style="width: 200px;">
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Cari</button>
+  </form>
+</div>
+
+<div class="admin-card" style="padding: 0; overflow: hidden;">
+  <table class="admin-table">
+    <thead>
+      {% if tab == 'login' %}
+      <tr><th>Waktu</th><th>Peserta</th><th>Status</th><th>IP</th><th>Notes</th></tr>
+      {% elif tab == 'admin' %}
+      <tr><th>Waktu</th><th>Admin</th><th>Aksi</th><th>Target</th><th>IP</th></tr>
+      {% else %}
+      <tr><th>Waktu</th><th>Peserta</th><th>Admin</th><th>Jenis</th><th>Status</th><th>Tujuan</th></tr>
+      {% endif %}
+    </thead>
+    <tbody>
+      {% for log in page %}
+      <tr>
+        {% if tab == 'login' %}
+        <td style="font-size: 11px;">{{ log.login_at|date:"d M Y H:i" }}</td>
+        <td>{% if log.peserta %}{{ log.peserta.nama }}{% else %}-{% endif %}</td>
+        <td>
+          {% if log.success %}<span class="badge badge-approved"><i class="fas fa-check"></i> OK</span>
+          {% else %}<span class="badge badge-rejected"><i class="fas fa-times"></i> Gagal</span>{% endif %}
+        </td>
+        <td style="font-family: monospace; font-size: 11px;">{{ log.ip_address|default:"-" }}</td>
+        <td style="font-size: 12px;">{{ log.notes|default:"-" }}</td>
+        {% elif tab == 'admin' %}
+        <td style="font-size: 11px;">{{ log.created_at|date:"d M Y H:i" }}</td>
+        <td>{{ log.admin.username|default:"-" }}</td>
+        <td><strong>{{ log.action }}</strong></td>
+        <td style="font-size: 12px;">{{ log.target_type|default:"-" }} #{{ log.target_id|default:"-" }}</td>
+        <td style="font-family: monospace; font-size: 11px;">{{ log.ip_address|default:"-" }}</td>
+        {% else %}
+        <td style="font-size: 11px;">{{ log.sent_at|date:"d M Y H:i" }}</td>
+        <td>{{ log.peserta.nama }}</td>
+        <td>{{ log.admin.username|default:"-" }}</td>
+        <td>{{ log.get_jenis_kontak_display }}</td>
+        <td>
+          <span class="badge badge-{% if log.status_kirim == 'terkirim' %}approved{% else %}rejected{% endif %}">
+            {{ log.get_status_kirim_display }}
+          </span>
+        </td>
+        <td style="font-family: monospace; font-size: 11px;">{{ log.nomor_tujuan|default:"-" }}</td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+          Belum ada log.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include 'peserta/admin/_pagination.html' %}
+
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Detail Aktivasi{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Review Aktivasi</h1>
+    <div class="admin-page-subtitle">
+      <a href="{% url 'admin_panel:aktivasi_list' %}" style="color: #2563eb;">← Kembali ke daftar</a>
+    </div>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- DATA PESERTA -->
+  <div class="admin-card">
+    <div class="admin-card-title">Peserta</div>
+    <div class="detail-row"><div class="detail-label">Nama</div><div class="detail-value"><strong>{{ pengajuan.peserta.nama }}</strong></div></div>
+    <div class="detail-row"><div class="detail-label">Instansi</div><div class="detail-value">{{ pengajuan.peserta.tempat_tugas|default:"-" }}</div></div>
+    <div class="detail-row"><div class="detail-label">Kabupaten</div><div class="detail-value">{{ pengajuan.peserta.kabupaten|default:"-" }}</div></div>
+    <div class="detail-row">
+      <div class="detail-label">No. WA</div>
+      <div class="detail-value">
+        {{ pengajuan.peserta.nomor_wa|default:"-" }}
+        <!-- TOMBOL WHATSAPP -->
+        {% if pengajuan.peserta.nomor_wa %}
+          <a href="https://wa.me/{{ pengajuan.peserta.nomor_wa }}?text=Halo%20Bapak/Ibu%20{{ pengajuan.peserta.nama|urlencode }}%2C%20terkait%20pengajuan%20aktivasi%20akun%20Anda..." 
+             target="_blank" class="btn btn-sm" style="background-color: #25D366; color: white; border: none; margin-left: 8px; padding: 4px 10px; font-size: 12px;">
+            <i class="fab fa-whatsapp"></i> Chat
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO PENGAJUAN -->
+  <div class="admin-card">
+    <div class="admin-card-title">Info Pengajuan</div>
+    <div class="detail-row"><div class="detail-label">Ref</div><div class="detail-value"><strong>{{ pengajuan.nomor_referensi }}</strong></div></div>
+    <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-{{ pengajuan.status }}">{{ pengajuan.get_status_display }}</span></div></div>
+    <div class="detail-row"><div class="detail-label">Diajukan</div><div class="detail-value">{{ pengajuan.created_at|date:"d M Y H:i" }}</div></div>
+    <div class="detail-row"><div class="detail-label">IP</div><div class="detail-value" style="font-family: monospace;">{{ pengajuan.ip_address|default:"-" }}</div></div>
+  </div>
+</div>
+
+<!-- IDENTITAS YANG DIAJUKAN -->
+<div class="admin-card">
+  <div class="admin-card-title">Identitas yang Diajukan</div>
+  <div class="detail-grid">
+    <div class="detail-row"><div class="detail-label">NIK</div><div class="detail-value"><strong>{{ pengajuan.nik_diisi|default:"-" }}</strong></div></div>
+    <div class="detail-row"><div class="detail-label">NIP</div><div class="detail-value"><strong>{{ pengajuan.nip_diisi|default:"-" }}</strong></div></div>
+  </div>
+  <div class="detail-row"><div class="detail-label">NUPTK</div><div class="detail-value"><strong>{{ pengajuan.nuptk_diisi|default:"-" }}</strong></div></div>
+  <div class="detail-row"><div class="detail-label">Alasan Kosong</div><div class="detail-value">{{ pengajuan.alasan_kosong|default:"-" }}</div></div>
+</div>
+
+<!-- DOKUMEN -->
+<div class="admin-card">
+  <div class="admin-card-title">Dokumen Bukti ({{ pengajuan.dokumen.count }} file)</div>
+  {% if pengajuan.dokumen.all %}
+  <div class="dokumen-grid">
+    {% for d in pengajuan.dokumen.all %}
+      {% if not d.deleted_at %}
+      <div class="dokumen-item">
+        <div style="font-size: 40px; margin-bottom: 8px;">📄</div>
+        <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">{{ d.get_jenis_dokumen_display }}</div>
+        <div style="font-size: 11px; color: #64748b; margin-bottom: 12px;">
+          {{ d.file_size|filesizeformat }}<br>
+          {{ d.file_name_original|truncatechars:30 }}
+        </div>
+        
+        <!-- TOMBOL LIHAT & DOWNLOAD -->
+        <div style="display: flex; gap: 6px; justify-content: center;">
+          <a href="{% url 'peserta:dokumen_aktivasi' d.pk %}" target="_blank" rel="noopener" class="btn btn-sm btn-secondary" style="padding: 6px 12px;">
+            <i class="fas fa-eye"></i> Lihat
+          </a>
+          <a href="{% url 'peserta:dokumen_aktivasi' d.pk %}" class="btn btn-sm btn-primary" style="padding: 6px 12px;">
+            <i class="fas fa-download"></i> Unduh
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <div class="dokumen-item" style="opacity: 0.5;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🗑️</div>
+        <div style="font-weight: 600; font-size: 13px;">{{ d.get_jenis_dokumen_display }}</div>
+        <div style="font-size: 11px; color: #64748b;">Sudah dihapus</div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="padding: 20px; text-align: center; color: #94a3b8;">Tidak ada dokumen upload.</div>
+  {% endif %}
+
+  <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 12px; color: #92400e;">
+    ⚠️ <strong>Checklist Verifikasi Manual:</strong> Pastikan NIK di KTP cocok dengan yang diisi, nama di KTP cocok dengan nama peserta, dan NIP di SK cocok dengan yang diisi.
+  </div>
+</div>
+
+<!-- FORM AKSI -->
+{% if pengajuan.status == 'pending' %}
+<div class="admin-card">
+  <div class="admin-card-title">Aksi</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">
+        Catatan Admin (opsional untuk approve, wajib untuk reject)
+      </label>
+      <textarea name="catatan_admin" rows="3" placeholder="Alasan approve atau reject..."></textarea>
+    </div>
+
+    <div class="action-buttons">
+      <button type="submit" name="action" value="approve" class="btn btn-success"
+              onclick="return confirm('Setujui aktivasi ini? Identitas peserta akan diperbarui dan file dokumen akan dihapus.');">
+        ✅ Approve & Aktifkan
+      </button>
+      <button type="submit" name="action" value="reject" class="btn btn-danger"
+              onclick="return confirm('Tolak aktivasi ini? File dokumen akan dihapus.');">
+        ❌ Reject
+      </button>
+      <a href="{% url 'admin_panel:aktivasi_list' %}" class="btn btn-secondary">Batal</a>
+    </div>
+  </form>
+</div>
+{% else %}
+<div class="admin-card">
+  <div class="admin-card-title">Hasil Review</div>
+  <div class="detail-row"><div class="detail-label">Direview oleh</div><div class="detail-value">{{ pengajuan.reviewed_by.username|default:"-" }}</div></div>
+  <div class="detail-row"><div class="detail-label">Tanggal</div><div class="detail-value">{{ pengajuan.reviewed_at|date:"d M Y H:i"|default:"-" }}</div></div>
+  {% if pengajuan.catatan_admin %}
+  <div class="detail-row"><div class="detail-label">Catatan</div><div class="detail-value">{{ pengajuan.catatan_admin }}</div></div>
+  {% endif %}
+  <div class="action-buttons">
+    <a href="{% url 'admin_panel:aktivasi_list' %}" class="btn btn-secondary">← Kembali</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

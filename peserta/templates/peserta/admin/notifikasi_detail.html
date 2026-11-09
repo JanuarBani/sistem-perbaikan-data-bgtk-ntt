@@ -1,0 +1,103 @@
+{% extends 'peserta/admin/base_admin.html' %}
+{% block title %}Baca Notifikasi{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div>
+    <h1 class="admin-page-title">Baca Notifikasi</h1>
+    <div class="admin-page-subtitle">
+      <a href="{% url 'admin_panel:notifikasi_list' %}" style="color: #2563eb;">← Kembali ke daftar</a>
+    </div>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- Info Peserta -->
+  <div class="admin-card">
+    <div class="admin-card-title">Penerima</div>
+    <div class="detail-row">
+      <div class="detail-label">Nama Peserta</div>
+      <div class="detail-value">
+        <a href="{% url 'admin_panel:peserta_detail' notif.peserta.id %}" style="color: #2563eb; font-weight: 600;">
+          {{ notif.peserta.nama }}
+        </a>
+      </div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">No. WA</div>
+      <div class="detail-value">{{ notif.peserta.nomor_wa|default:"-" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Instansi</div>
+      <div class="detail-value">{{ notif.peserta.tempat_tugas|default:"-" }}</div>
+    </div>
+  </div>
+
+  <!-- Info Notifikasi -->
+  <div class="admin-card">
+    <div class="admin-card-title">Info Notifikasi</div>
+    <div class="detail-row">
+      <div class="detail-label">Waktu Kirim</div>
+      <div class="detail-value">{{ notif.created_at|date:"l, d F Y, H:i" }}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Tipe</div>
+      <div class="detail-value"><span class="badge badge-primary">{{ notif.get_tipe_display }}</span></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-label">Dibaca Pada</div>
+      <div class="detail-value">
+        {% if notif.read_at %}
+          {{ notif.read_at|date:"d M Y, H:i" }}
+        {% else %}
+          <span style="color:#ef4444; font-weight:600;">Belum dibaca</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Isi Pesan -->
+<div class="admin-card">
+  <div class="admin-card-title">Isi Pesan</div>
+  
+  <h3 style="margin: 0 0 16px 0; font-size: 18px; color: #0f172a;">
+    {{ notif.judul }}
+  </h3>
+  
+  <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; line-height: 1.7; color: #334155; white-space: pre-wrap;">
+    {{ notif.isi }}
+  </div>
+  
+  {% if notif.link_terkait %}
+  <div style="margin-top: 16px;">
+    <a href="{{ notif.link_terkait }}" class="btn btn-primary" target="_blank">🔗 Buka Tautan Terkait</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Aksi -->
+<div class="admin-card">
+  <div class="admin-card-title">Aksi</div>
+  <div class="action-buttons" style="margin-top: 0; padding-top: 0; border: none;">
+    
+    <!-- Toggle Read -->
+    <form method="post" action="{% url 'admin_panel:notifikasi_toggle_read' notif.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary">
+        {% if notif.sudah_dibaca %}📩 Tandai Belum Dibaca{% else %}✅ Tandai Dibaca{% endif %}
+      </button>
+    </form>
+
+    <!-- Hapus -->
+    <form method="post" action="{% url 'admin_panel:notifikasi_delete' notif.id %}" 
+          onsubmit="return confirm('Hapus notifikasi ini secara permanen?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">🗑️ Hapus Notifikasi</button>
+    </form>
+    
+    <a href="{% url 'admin_panel:notifikasi_list' %}" class="btn btn-secondary" style="margin-left: auto;">Kembali</a>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,77 +1,209 @@
-{% extends 'peserta/base.html' %}
-{% load static %}
-
-{% block content %}
-<section class="hero" style="border-radius: var(--radius-lg); margin-bottom: 24px; box-shadow: var(--shadow-lg); position: relative; background: linear-gradient(135deg, #1e40af, #3b82f6);">
-  
+{% extends 'peserta/base.html' %} {% load static %} {% block content %}
+<section
+  class="hero"
+  style="
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+  "
+>
   <!-- GAMBAR LOGO DI HERO SECTION -->
-  <div style="margin-bottom: 20px;">
-    <img src="{% static 'images/logo.webp' %}" alt="Logo Instansi" 
-         style="height: 90px; width: auto; object-fit: contain; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+  <div style="margin-bottom: 20px">
+    <img
+      src="{% static 'images/logo.webp' %}"
+      alt="Logo Instansi"
+      style="
+        height: 90px;
+        width: auto;
+        object-fit: contain;
+        background: white;
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      "
+    />
   </div>
 
-  <h1 style="font-size: 28px; line-height: 1.4;"><i class="fas fa-hands-helping" style="margin-right: 8px;"></i> Perbaikan Data Guru Terdampak Gempa Flores</h1>
-  <p style="font-size: 16px; max-width: 700px; margin: 0 auto 32px auto;">Mari perbarui data Anda untuk memastikan validitas penerimaan bantuan, tunjangan, dan pemulihan data kepegawaian berjalan tepat sasaran.</p>
-  
+  <h1 style="font-size: 28px; line-height: 1.4">
+    <i class="fas fa-clipboard-list" style="margin-right: 8px"></i> Pendataan Guru dan Tenaga Kependidikan Terdampak Gempa Flores
+  </h1>
+  <p style="font-size: 16px; max-width: 700px; margin: 0 auto 32px auto">
+    Silakan periksa dan perbarui data kepegawaian Anda agar tercatat dengan
+    benar dan dapat diverifikasi.
+  </p>
+
   <!-- TOMBOL YANG DIPERBAIKI -->
-  <a href="{% url 'peserta:persetujuan' %}" class="btn" 
-     style="background: var(--white); color: var(--primary); font-size: 18px; font-weight: 700; padding: 16px 40px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px;">
-    <i class="fas fa-search"></i> Cari & Ubah Data Anda <i class="fas fa-arrow-right"></i>
+  <a
+    href="{% url 'peserta:persetujuan' %}"
+    class="btn"
+    style="
+      background: var(--white);
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 700;
+      padding: 16px 40px;
+      border-radius: 50px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    "
+  >
+    <i class="fas fa-search"></i> Cari & Ubah Data Anda
+    <i class="fas fa-arrow-right"></i>
   </a>
 </section>
 
 <!-- PEMBERITAHUAN PENTING -->
-<div class="alert alert-warning" style="display: flex; align-items: center; gap: 12px; border-left: 4px solid #f59e0b; font-size: 14px;">
-  <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #f59e0b;"></i>
+<div
+  class="alert alert-warning"
+  style="
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 4px solid #f59e0b;
+    font-size: 14px;
+  "
+>
+  <i
+    class="fas fa-exclamation-triangle"
+    style="font-size: 24px; color: #f59e0b"
+  ></i>
   <div>
-    <strong>Perhatian:</strong> Pastikan <strong>Nomor Rekening</strong>, <strong>NIK</strong>, dan <strong>Nama Anda</strong> sudah sesuai. Data ini akan digunakan sebagai dasar penyaluran dana stimulan/bantuan bencana.
+    <strong>Perhatian:</strong> Pastikan seluruh data dibawah ini sudah sesuai.
+    Informasi tersebut merupakan bagian dari kelengkapan pendataan.
   </div>
 </div>
 
 <div class="card">
   <h2 class="card-title primary mb-4">
-    <i class="fas fa-server" style="margin-right: 8px;"></i> Status Aktivasi Akun Baru
+    <i class="fas fa-server" style="margin-right: 8px"></i> Status Aktivasi Akun
+    Baru
   </h2>
   {% if aktivasi_terbuka %}
-    <div class="alert alert-success" style="display: flex; align-items: center; gap: 10px;">
-      <i class="fas fa-check-circle" style="font-size: 20px;"></i>
-      <div>
-        <strong>Aktivasi dibuka.</strong> {{ pending }}/{{ batas }} slot terpakai. Silakan ajukan aktivasi jika data identitas Anda kosong.
-      </div>
+  <div
+    class="alert alert-success"
+    style="display: flex; align-items: center; gap: 10px"
+  >
+    <i class="fas fa-check-circle" style="font-size: 20px"></i>
+    <div>
+      <strong>Aktivasi dibuka.</strong> {{ pending }}/{{ batas }} slot terpakai.
+      Silakan ajukan aktivasi jika data identitas Anda kosong.
     </div>
+  </div>
   {% else %}
-    <div class="alert alert-warning" style="display: flex; align-items: center; gap: 10px;">
-      <i class="fas fa-pause-circle" style="font-size: 20px;"></i>
-      <div>
-        <strong>Aktivasi ditutup sementara.</strong> Sedang banyak pengajuan ({{ pending }}/{{ batas }}). Coba lagi besok.
-      </div>
+  <div
+    class="alert alert-warning"
+    style="display: flex; align-items: center; gap: 10px"
+  >
+    <i class="fas fa-pause-circle" style="font-size: 20px"></i>
+    <div>
+      <strong>Aktivasi ditutup sementara.</strong> Sedang banyak pengajuan ({{
+      pending }}/{{ batas }}). Coba lagi besok.
     </div>
+  </div>
   {% endif %}
 </div>
 
 <div class="card">
   <h2 class="card-title primary mb-4">
-    <i class="fas fa-info-circle" style="margin-right: 8px;"></i> Panduan Penggunaan
+    <i class="fas fa-info-circle" style="margin-right: 8px"></i> Panduan
+    Penggunaan
   </h2>
-  
-  <div style="display: grid; gap: 16px; margin-top: 20px;">
-    <div style="display: flex; gap: 16px; align-items: flex-start;">
-      <div style="background: var(--primary-light); color: var(--primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
-      <div><strong>Cari Nama Anda</strong><br><span class="text-muted" style="font-size: 14px;">Gunakan fitur pencarian di halaman utama untuk menemukan data Anda.</span></div>
+
+  <div style="display: grid; gap: 16px; margin-top: 20px">
+    <div style="display: flex; gap: 16px; align-items: flex-start">
+      <div
+        style="
+          background: var(--primary-light);
+          color: var(--primary);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          flex-shrink: 0;
+        "
+      >
+        1
+      </div>
+      <div>
+        <strong>Cari Nama Anda</strong><br /><span
+          class="text-muted"
+          style="font-size: 14px"
+          >Gunakan fitur pencarian di halaman utama untuk menemukan data
+          Anda.</span
+        >
+      </div>
     </div>
-    <div style="display: flex; gap: 16px; align-items: flex-start;">
-      <div style="background: var(--primary-light); color: var(--primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
-      <div><strong>Verifikasi Identitas</strong><br><span class="text-muted" style="font-size: 14px;">Masukkan NUPTK / NIK / NIP / Tanggal Lahir Anda sesuai data kepegawaian.</span></div>
+    <div style="display: flex; gap: 16px; align-items: flex-start">
+      <div
+        style="
+          background: var(--primary-light);
+          color: var(--primary);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          flex-shrink: 0;
+        "
+      >
+        2
+      </div>
+      <div>
+        <strong>Verifikasi Identitas</strong><br /><span
+          class="text-muted"
+          style="font-size: 14px"
+          >Masukkan NUPTK / NIK / NIP / Tanggal Lahir Anda sesuai data
+          kepegawaian.</span
+        >
+      </div>
     </div>
-    <div style="display: flex; gap: 16px; align-items: flex-start;">
-      <div style="background: var(--primary-light); color: var(--primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
-      <div><strong>Periksa & Perbaiki Rekening</strong><br><span class="text-muted" style="font-size: 14px;">Cek data Anda, terutama <b>Nomor Rekening</b>, lalu ajukan perbaikan jika ada yang salah.</span></div>
+    <div style="display: flex; gap: 16px; align-items: flex-start">
+      <div
+        style="
+          background: var(--primary-light);
+          color: var(--primary);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          flex-shrink: 0;
+        "
+      >
+        3
+      </div>
+      <div>
+        <strong>Periksa & Perbaiki Rekening</strong><br /><span
+          class="text-muted"
+          style="font-size: 14px"
+          >Cek data Anda, terutama <b>Nomor Rekening</b>, lalu ajukan perbaikan
+          jika ada yang salah.</span
+        >
+      </div>
     </div>
   </div>
 
-  <div class="alert alert-info mt-4" style="display: flex; align-items: center; gap: 10px;">
+  <div
+    class="alert alert-info mt-4"
+    style="display: flex; align-items: center; gap: 10px"
+  >
     <i class="fas fa-lightbulb"></i>
-    <span>Jika NIK/NIP/NUPTK Anda kosong, gunakan menu <strong>Aktivasi</strong> dengan mengunggah foto KTP/KK dan SK.</span>
+    <span
+      >Jika NIK/NIP/NUPTK Anda kosong, gunakan menu
+      <strong>Aktivasi</strong> dengan mengunggah foto KTP/KK dan SK.</span
+    >
   </div>
 </div>
 {% endblock %}
